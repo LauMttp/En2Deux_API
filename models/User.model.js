@@ -21,7 +21,7 @@ const userSchema = new Schema(
     },
     genre: {
       type: Schema.Types.String,
-      enum: ["male", "female", "stupid"],
+      enum: ["male", "female", "stupid", "shemale"],
     },
     phoneNumber: Schema.Types.Number,
     address: Schema.Types.String,
