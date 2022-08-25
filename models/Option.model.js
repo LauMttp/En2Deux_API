@@ -1,6 +1,10 @@
 const { Schema, model } = require("mongoose");
 
 const optionSchema = new Schema({
+    event: {
+        type: Schema.Types.ObjectId,
+        ref: "Option",
+    },
     date: Schema.Types.Date,
     duration: Schema.Types.Number,
     price: Schema.Types.Number,
