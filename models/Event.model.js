@@ -10,25 +10,24 @@ const eventSchema = new Schema({
     ref: "User",
     require: true,
   },
-  bio: {
+  description: {
     type: Schema.Types.String,
     maxLength: 250,
   },
-  dateSuggestion: {
-    type: [Schema.Types.Date],
-    maxLength: 2,
-  },
-  locationSuggestions: [Schema.Types.String],
-  date: {
+  //dateSuggestion: [Schema.Types.Date, Schema.Types.Date],
+  //locationSuggestions: [Schema.Types.String],
+  startingDate: {
     type: Schema.Types.Date,
   },
+  durationInHours: Schema.Types.Number,
   location: Schema.Types.String,
   budget: Schema.Types.Number,
-  informationGatheringDeadline: Schema.Types.Date,
+  //informationGatheringDeadline: Schema.Types.Date,
   votingStageDeadline: Schema.Types.Date,
   stage: {
     type: Schema.Types.String,
     enum: ["Information gathering", "Voting stage", "On-going", "Finished"],
+    default: "Information gathering",
   },
 });
 
