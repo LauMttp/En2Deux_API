@@ -9,7 +9,7 @@ const users = [
         name: 'Agash',
         surname: 'zemfzgjzlgj',
         password: 'Usddfgdfhdfh234!',
-        genre: 'stupid',
+        genre: 'male',
         phoneNumber: 05623522352253,
         address: "9 avenue de la fameeee, 93100, Le ZOOOOOO"
         email: 'agashDKash@mail.com',
@@ -29,7 +29,7 @@ const users = [
         name: 'Paul',
         surname: 'Nizet',
         password: 'Usddfgfhdfh234!',
-        genre: 'shemale',
+        genre: 'female',
         phoneNumber: 0723522352253,
         address: "Station Fuck, 75013, La capitale"
         email: 'Paul@sneakmart.com',
@@ -49,7 +49,7 @@ const users = [
         name: 'Valery',
         surname: 'Valoche',
         password: 'Usddfgdfhdfh234!',
-        genre: 'stupid',
+        genre: 'male',
         phoneNumber: 093522352253,
         address: "5 avenue de la quarantaine, 77310, Melun"
         email: 'valoche@questionpourunchampion.com',
