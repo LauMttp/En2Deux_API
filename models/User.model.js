@@ -5,27 +5,29 @@ const userSchema = new Schema(
     username: {
       type: Schema.Types.String,
       unique: true,
-      require: true,
+      required: true,
     },
     name: {
       type: Schema.Types.String,
-      require: true,
+      required: true,
     },
     surname: {
       type: Schema.Types.String,
-      require: true,
+      required: true,
     },
     password: {
       type: Schema.Types.String,
-      require: true,
+      required: true,
     },
     genre: {
       type: Schema.Types.String,
-      enum: ["male", "female", "stupid", "shemale"],
+      enum: ["male", "female"],
     },
     phoneNumber: Schema.Types.Number,
-    address: Schema.Types.String,
-    email: Schema.Types.String,
+    email: {
+      type: Schema.Types.String,
+      required: true,
+    },
   },
   {
     timestamps: true,

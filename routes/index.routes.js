@@ -74,7 +74,19 @@ router.post('/vote', async (req, res, next) => {
 //add friends - Lau
 router.post();
 
-//display event linked to one user - Kash
+// display user friends
+router/this.get()
+
+//display one event by ID (with attendees, options, votes, etc)
+router.get()
+
+//display one event by name 
+router.get()
+
+//display one option (with option ID and current votes)
+router.get()
+
+//display all events linked to one user - Kash
 router.get('/event/:idUser', async (req, res, next) => {
   try{
     const idUser = req.params;
@@ -82,6 +94,44 @@ router.get('/event/:idUser', async (req, res, next) => {
     next(error);
   }
 });
+
+//display all events - User role = admin
+router.get()
+
+//display all events - User role = attendee (notAdmin)
+router.get()
+
+// display all upcoming events linked to a user
+router.get()
+
+//delete event
+router.delete()
+
+//delete options from event
+router.delete()
+
+//remove attendee from an event (isAdmin = true)
+router.delete()
+
+// remove user from friend list
+router.delete()
+
+//Update event informations
+router.patch()
+
+//Update options informations (isAdmin = true)
+router.patch()
+
+//Update user profile informations
+router.patch()
+
+//modify vote
+router.patch()
+
+//log out
+router.post()
+
+
 
 router.use("/auth", authRoutes);
 

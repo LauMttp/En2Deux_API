@@ -9,9 +9,9 @@ const attendeeSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
-  availabilities: [Schema.Types.Date],
-  budget: Schema.Types.Number,
-  location: [Schema.Types.String],
+  // availabilities: [Schema.Types.Date],
+  // budget: Schema.Types.Number,
+  // location: [Schema.Types.String],
 });
 
 const Attendee = model("Attendee", attendeeSchema);
