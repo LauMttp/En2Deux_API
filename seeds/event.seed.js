@@ -1,64 +1,49 @@
-require('dotenv').config()
-require('../db')
+require("dotenv").config();
+require("../db");
 const Event = require("../models/Event.model");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const events = [
-    {
-        name: 'Iron',
-        author:
-        surname: 'zemfzgjzlgj',
-        password: 'Usddfgdfhdfh234!',
-        genre: 'stupid',
-        phoneNumber: 05623522352253,
-        address: "9 avenue de la fameeee, 93100, Le ZOOOOOO",
-        email: 'agashDKash@mail.com',
-      },
-]
-const eventSchema = new Schema({
-    name: {
-      type: Schema.Types.String,
-      require: true,
-    },
-    author: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      require: true,
-    },
-    bio: {
-      type: Schema.Types.String,
-      maxLength: 250,
-    },
-    dateSuggestion: {
-      type: [Schema.Types.Date],
-      maxLength: 2,
-    },
-    locationSuggestions: [Schema.Types.String],
-    date: {
-      type: Schema.Types.Date,
-    },
-    location: Schema.Types.String,
-    budget: Schema.Types.Number,
-    informationGatheringDeadline: Schema.Types.Date,
-    votingStageDeadline: Schema.Types.Date,
-    stage: {
-      type: Schema.Types.String,
-      enum: ["Information gathering", "Voting stage", "On-going", "Finished"],
-    },
-  });
-  
+  {
+    name: "Ironbeer",
+    author: idNeeded,
+    description: "drink free beers and get drunk!",
+    startingDate: new Date(2022 - 09 - 04),
+    durationInHours: 5,
+    location: "Deskopolitan Voltaire",
+    budget: 20,
+    votingStageDeadline: new Date(2022 - 08 - 29),
+    stage: "Voting stage",
+  },
+  {
+    name: "Project 2 - Presentation",
+    author: idNeeded,
+    description: "Let's present our backends!",
+    startingDate: new Date(2022 - 09 - 05),
+    durationInHours: 8,
+    location: "Deskopolitan Voltaire",
+    votingStageDeadline: new Date(2022 - 09 - 02),
+    stage: "Voting stage",
+  },
+  {
+    name: "Iron alumni party",
+    author: idNeeded,
+    description: "Let's meet up again!",
+    votingStageDeadline: new Date(2022 - 09 - 30),
+    stage: "Voting stage",
+  },
+];
 
 async function seedTheData(newEvents) {
-    console.log("Deleting previous events...");
-    try{
-        await Event.deleteMany()
-        const createEvents = Event.create(newEvents);
-        console.log(`${createEvents.length} events created !`);
-        await mongoose.disconnect();
-    }
-    catch(error){
-        console.error(error.message)
-    }
+  console.log("Deleting previous events...");
+  try {
+    await Event.deleteMany();
+    const createEvents = Event.create(newEvents);
+    console.log(`${createEvents.length} events created !`);
+    await mongoose.disconnect();
+  } catch (error) {
+    console.error(error.message);
+  }
 }
 
-seedTheData(events)
+seedTheData(events);
