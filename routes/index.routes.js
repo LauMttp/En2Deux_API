@@ -42,7 +42,13 @@ router.post("/createevent/:userId", isAuthenticated, async (req, res, next) => {
         // budget,
         votingStageDeadline,
       });
-      return res.status(201).json(eventCreated);
+      const { _id } = eventCreated;
+      const creatorAttendance = await Attendee.create({
+        event: _id,
+        user: userId,
+        isAdmin: true,
+      });
+      return res.status(201).json(eventCreated, creatorAttendance);
     }
   } catch (error) {
     next(error);
@@ -52,12 +58,12 @@ router.post("/createevent/:userId", isAuthenticated, async (req, res, next) => {
 //Invite people --> create attendee document - Kash
 // --> get user / event / attendee ID from params or body ????
 router.post(
-  "/attendee/:eventId/:userId/:attendeeId",
+  "/addAttendee/:eventId/:userId/:attendeeId",
   isAuthenticated,
   async (req, res, next) => {
     try {
       const { eventId, userId, attendeeId } = req.params;
-      const myEvent = await Event.findById(eventId);
+      const myEvent = await Event.findById({ _id: eventId });
       if (myEvent.author !== userId) {
         return res
           .status(401)
@@ -82,8 +88,9 @@ router.post(
     try {
       const { userId, eventId } = req.params;
       const { date, duration, price, location } = req.body;
-      const myEvent = await Event.findById(eventId);
-      if (myEvent.author !== userId) {
+      const isAttendee = await Attendee.find({ event: eventId, user: userId });
+      const myEvent = await Event.findById({ _id: eventId });
+      if (myEvent.author !== userId || isAttendee.isAdmin === false) {
         return res
           .status(401)
           .json({ message: "Only event admin(s) can create new option." });
@@ -160,7 +167,9 @@ router.post(
   async (req, res, next) => {
     try {
       const { userId, friendshipId, answer } = req.params;
-      const friendshipRequest = await Friendship.findById(friendshipId);
+      const friendshipRequest = await Friendship.findById({
+        _id: friendshipId,
+      });
       if (friendshipRequest.requested !== userId) {
         return res.status(401).json({
           message: "Invalid user, you can't answer this friendship request.",
@@ -186,97 +195,231 @@ router.post(
 );
 
 // display user friends - Lau
-router.get()
+router.get("/friends/:userId", isAuthenticated, async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const allMyFriends = await Friendship.find({
+      requested: userId,
+      status: "accepted",
+    });
+    // add to find request the condition || {requestor: userId, status:"accepted"}
+    return res.status(200).json(allMyFriends);
+  } catch (error) {
+    next(error);
+  }
+});
 
 //display one event by ID (with attendees, options, votes, etc) - Kash
-router.get('/events/:idEvent', isLoggedIn, async (req, res, next) => {
-  try{
+router.get("/events/:idEvent", isLoggedIn, async (req, res, next) => {
+  try {
     const { idEvent } = req.params;
-    const findEvent = await Event.findById({ _id : idEvent });
-    const findOptions = await Option.find({ event : idEvent });
-   
+    const findEvent = await Event.findById({ _id: idEvent });
+    const findOptions = await Option.find({ event: idEvent });
+
     //findAttendees is an Array
-    const findAttendees = await Attendee.find({event : idEvent});
+    const findAttendees = await Attendee.find({ event: idEvent });
 
     //findVotes is an array of objects
     let findVotes = [];
-    //For one attendee of findAttendees, 
+    //For one attendee of findAttendees,
     //I'll find his 3 votes and store them in votesOf.votes
     //Each attendee will have his own object named votesOf
     //and I'll store every votesOf objects in findVotes
-    for (let attendee of findAttendees){
+    for (let attendee of findAttendees) {
       const votesOf = {
-        attendee : attendee.name,
-        votes : [],
+        attendee: attendee.name,
+        votes: [],
       };
-      const findVotesOf = await Vote.find({attendee : attendee._id});
+      const findVotesOf = await Vote.find({ attendee: attendee._id });
       votesOf.votes.push(findVotesOf);
       findVotes.push(votesOf);
     }
 
     const displayEvent = [findEvent, findOptions, findAttendees, findVotes];
 
-
     res.json(displayEvent);
-  }catch(error){
-    next(error);
-  }
-})
-
-//display one event by name - Kash
-router.get('/events', isLoggedIn, async (req, res, next) => {
-  try{
-    //comment recupérer l'id de l'user connecté ?
-    //car je dois retourner que les events de cet User
-    const {name} = req.body;
-    const displayEvent = await Event.find({name});
-    res.json(displayEvent);
-  } catch(error){
+  } catch (error) {
     next(error);
   }
 });
 
-//display one option (with option ID and current votes) - Lau
-router.get()
+//display one event by name - Kash
+router.get("/events", isLoggedIn, async (req, res, next) => {
+  try {
+    //comment recupérer l'id de l'user connecté ?
+    //car je dois retourner que les events de cet User
+    const { name } = req.body;
+    const displayEvent = await Event.find({ name });
+    res.json(displayEvent);
+  } catch (error) {
+    next(error);
+  }
+});
+
+//display one option with option ID - Lau
+router.get(
+  "/addOption/:userId/eventId/optionId",
+  isAuthenticated,
+  async (req, res, next) => {
+    try {
+      const { userId, eventId, optionId } = req.params;
+      const isAttendee = await Attendee.find({ event: eventId, user: userId });
+      if (!isAttendee) {
+        return res.status(401).json({
+          message: "Access denied. You can't access this event information.",
+        });
+      } else {
+        const myOption = await Option.find({ _id: optionId, event: eventId });
+        if (!myOption) {
+          return res.status(404).json({ message: "No option found.." });
+        } else {
+          return res.status(201).json(myOption);
+        }
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 //display all events linked to one user - Kash
-router.get('/events/:token');
+router.get("/events/:token");
 
-//display all events - User role = admin - Lau
-router.get()
-
-//display all events - User role = attendee (notAdmin) - Lau
-router.get()
+//display all events - filter by User role isAdmin or not - Lau
+router.get(
+  "events/role/:userId/:role",
+  isAuthenticated,
+  async (req, res, next) => {
+    try {
+      const { userId, role } = req.params;
+      if (role === "admin") {
+        const adminAttendances = await Attendee.find({
+          user: userId,
+          isAdmin: true,
+        });
+        const administratedEvents = [];
+        adminAttendances.forEach((attendance) => {
+          const { event } = attendance;
+          const adminEvent = Event.findById(event);
+          administratedEvents.push(adminEvent);
+        });
+        return res.status(201).json(await Promise.all(administratedEvents));
+      } else if (role === "notAdmin") {
+        const notAdminAttendances = await Attendee.find({
+          user: userId,
+          isAdmin: false,
+        });
+        const notAdministratedEvents = [];
+        notAdminAttendances.forEach((attendance) => {
+          const { event } = attendance;
+          const notAdminEvent = Event.findById(event);
+          notAdministratedEvents.push(notAdminEvent);
+        });
+        return res.status(201).json(await Promise.all(notAdministratedEvents));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // display all upcoming events linked to a user - Kash
-router.get()
+router.get();
 
-//delete event - Lau 
-router.delete()
-
+//delete event - Lau
+router.delete(
+  "event/delete/:eventId/:userId",
+  isAuthenticated,
+  async (req, res, next) => {
+    try {
+      const { eventId, userId } = req.params;
+      const eventToBeDeleted = await Event.findById(eventId);
+      if (eventToBeDeleted.author.toString() !== userId) {
+        return res
+          .status(400)
+          .json({ message: "Access denied. You can't delete this event." });
+      } else if (eventToBeDeleted.author.toString() === userId) {
+        const deletedEvent = await Event.findByIdAndDelete(eventId);
+        return res.status(200).json(deletedEvent);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 //delete options from event - Kash
-router.delete()
+router.delete();
 
-//remove attendee from an event (isAdmin = true) - Lau
-router.delete()
+//remove attendee from an event (isAdmin = true) - Lau --> remove vote also
+router.delete(
+  "removeAttendee/:userId/:eventId/:attendeeId",
+  isAuthenticated,
+  async (req, res, next) => {
+    try {
+      const { userId, eventId, attendeeId } = req.params;
+      const requestorAttendance = await Attendee.find({
+        event: eventId,
+        user: userId,
+      });
+      if (!requestorAttendance.isAdmin) {
+        return res.status(400).json({
+          message:
+            "Access denied. You can't remove an attendee from this event.",
+        });
+      } else {
+        const attendeeToBeRemoved = await Attendee.find({
+          event: eventId,
+          user: attendeeId,
+        });
+        const voteToBeDeleted = await Vote.find({
+          attendee: attendeeToBeRemoved._id,
+        });
+        const deleteVote = await Vote.findByIdAndDelete(voteToBeDeleted._id);
+        const removeAttendee = await Attendee.findByIdAndDelete(
+          attendeeToBeRemoved._id
+        );
+        return res.status(201).json(deleteVote, removeAttendee);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // remove user from friend list - Kash
-router.delete()
+router.delete();
 
 //Update event informations - Lau
-router.patch()
+router.patch(
+  "updateEvent/:userId/:eventId",
+  isAuthenticated,
+  async (req, res, next) => {
+    try {
+      const { userId, eventId } = req.params;
+      const requestorAttendance = await Attendee.find({
+        event: eventId,
+        user: userId,
+      });
+      if (!requestorAttendance.isAdmin) {
+        return res.status(400).json({
+          message: "Access denied. You can't modify this event.",
+        });
+      } else {
+        const updatedInfos = [...req.body];
+        const updatedEvent = await Event.findByIdAndUpdate(
+          eventId,
+          updatedInfos
+        );
+        return res.status(200).json(updatedEvent);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 //Update options informations (isAdmin = true) - Kash
-router.patch()
-
-//Update user profile informations - Lau
-router.patch()
-
-//modify vote - Kash
-router.patch()
-
-//log out - Lau
-router.post()
+router.patch();
 
 //Update user profile informations
 router.patch(
@@ -286,7 +429,7 @@ router.patch(
     const { userId } = req.params;
     const updatedInfos = [...req.body];
     try {
-      const user = await User.findByIdAndUpdate(userId, updatedInfos, {
+      const user = await User.findByIdAndUpdate({ _id: userId }, updatedInfos, {
         new: true,
       });
       return res.status(200).json(user);
@@ -304,7 +447,7 @@ router.patch(
     try {
       const { attendeeId, voteId, firstChoice, secondChoice, thirdChoice } =
         req.params;
-      const myVote = await Vote.findById(voteId);
+      const myVote = await Vote.findById({ _id: voteId });
       if (myVote.attendee !== attendeeId) {
         return res.status(401).json({
           message: "Invalid user, you can't modify this vote.",
@@ -317,7 +460,7 @@ router.patch(
           thirdChoice,
         };
         // need to add conditional and to only update the new value (if empty value -> do not update with undefined)
-        const updatedVote = Vote.findByIdAndUpdate(voteId, myVote, {
+        const updatedVote = Vote.findByIdAndUpdate({ _id: voteId }, myVote, {
           new: true,
         });
         return res.status(201).json(updatedVote);

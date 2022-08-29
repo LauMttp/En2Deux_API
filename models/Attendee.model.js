@@ -9,6 +9,11 @@ const attendeeSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
+  isAdmin: {
+    type: Schema.Types.Boolean,
+    required: true,
+    default: false,
+  },
   // availabilities: [Schema.Types.Date],
   // budget: Schema.Types.Number,
   // location: [Schema.Types.String],
