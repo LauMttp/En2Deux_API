@@ -50,6 +50,7 @@ router.post("/createevent/:userId", isAuthenticated, async (req, res, next) => {
 });
 
 //Invite people --> create attendee document - Kash
+// --> get user / event / attendee ID from params or body ????
 router.post(
   "/attendee/:eventId/:userId/:attendeeId",
   isAuthenticated,
@@ -108,6 +109,7 @@ router.post(
 );
 
 //vote creation - Kash
+// --> get user / event / Option ID from params or body ????
 router.post(
   "/vote/:attendeeId/:firstChoice/:secondChoice/:thirdChoice",
   isAuthenticated,
@@ -183,53 +185,98 @@ router.post(
   }
 );
 
-// display user friends
-router / this.get();
+// display user friends - Lau
+router.get()
 
-//display one event by ID (with attendees, options, votes, etc)
-router.get();
+//display one event by ID (with attendees, options, votes, etc) - Kash
+router.get('/events/:idEvent', isLoggedIn, async (req, res, next) => {
+  try{
+    const { idEvent } = req.params;
+    const findEvent = await Event.findById({ _id : idEvent });
+    const findOptions = await Option.find({ event : idEvent });
+   
+    //findAttendees is an Array
+    const findAttendees = await Attendee.find({event : idEvent});
 
-//display one event by name
-router.get();
+    //findVotes is an array of objects
+    let findVotes = [];
+    //For one attendee of findAttendees, 
+    //I'll find his 3 votes and store them in votesOf.votes
+    //Each attendee will have his own object named votesOf
+    //and I'll store every votesOf objects in findVotes
+    for (let attendee of findAttendees){
+      const votesOf = {
+        attendee : attendee.name,
+        votes : [],
+      };
+      const findVotesOf = await Vote.find({attendee : attendee._id});
+      votesOf.votes.push(findVotesOf);
+      findVotes.push(votesOf);
+    }
 
-//display one option (with option ID and current votes)
-router.get();
+    const displayEvent = [findEvent, findOptions, findAttendees, findVotes];
 
-//display all events linked to one user - Kash
-router.get("/event/:idUser", async (req, res, next) => {
-  try {
-    const idUser = req.params;
-  } catch (error) {
+
+    res.json(displayEvent);
+  }catch(error){
+    next(error);
+  }
+})
+
+//display one event by name - Kash
+router.get('/events', isLoggedIn, async (req, res, next) => {
+  try{
+    //comment recupérer l'id de l'user connecté ?
+    //car je dois retourner que les events de cet User
+    const {name} = req.body;
+    const displayEvent = await Event.find({name});
+    res.json(displayEvent);
+  } catch(error){
     next(error);
   }
 });
 
-//display all events - User role = admin
-router.get();
+//display one option (with option ID and current votes) - Lau
+router.get()
 
-//display all events - User role = attendee (notAdmin)
-router.get();
+//display all events linked to one user - Kash
+router.get('/events/:token');
 
-// display all upcoming events linked to a user
-router.get();
+//display all events - User role = admin - Lau
+router.get()
 
-//delete event
-router.delete();
+//display all events - User role = attendee (notAdmin) - Lau
+router.get()
 
-//delete options from event
-router.delete();
+// display all upcoming events linked to a user - Kash
+router.get()
 
-//remove attendee from an event (isAdmin = true)
-router.delete();
+//delete event - Lau 
+router.delete()
 
-// remove user from friend list
-router.delete();
+//delete options from event - Kash
+router.delete()
 
-//Update event informations
-router.patch();
+//remove attendee from an event (isAdmin = true) - Lau
+router.delete()
 
-//Update options informations (isAdmin = true)
-router.patch();
+// remove user from friend list - Kash
+router.delete()
+
+//Update event informations - Lau
+router.patch()
+
+//Update options informations (isAdmin = true) - Kash
+router.patch()
+
+//Update user profile informations - Lau
+router.patch()
+
+//modify vote - Kash
+router.patch()
+
+//log out - Lau
+router.post()
 
 //Update user profile informations
 router.patch(
