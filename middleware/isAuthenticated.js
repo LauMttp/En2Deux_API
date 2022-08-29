@@ -2,7 +2,7 @@ const jsonwebtoken = require("jsonwebtoken");
 const User = require("../models/User.model");
 
 const isAuthenticated = async (req, res, next) => {
-  const authorization = req.headers?.authorization;
+  const authorization = req.headers.authorization;
   if (!authorization) {
     res.status(401).json({ message: "Missing Authorization header" });
     return;

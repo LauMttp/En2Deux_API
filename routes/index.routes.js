@@ -108,21 +108,29 @@ router.post(
 );
 
 //vote creation - Kash
-router.post("/vote/:attendeeId", isAuthenticated, async (req, res, next) => {
-  try {
-    const { attendeeId } = req.params;
-    const { firstChoice, secondChoice, thirdChoice } = req.body;
-    const createdVote = await Vote.create({
-      attendee: attendeeId,
-      firstChoice,
-      secondChoice,
-      thirdChoice,
-    });
-    res.status(201).json(createdVote);
-  } catch (error) {
-    next(error);
+router.post(
+  "/vote/:attendeeId/:firstChoice/:secondChoice/:thirdChoice",
+  isAuthenticated,
+  async (req, res, next) => {
+    try {
+      const { attendeeId, firstChoice, secondChoice, thirdChoice } = req.params;
+      if (!firstChoice) {
+        return res.status(401).json({
+          message: "Please, provide at least 1 choice.",
+        });
+      }
+      const createdVote = await Vote.create({
+        attendee: attendeeId,
+        firstChoice,
+        secondChoice,
+        thirdChoice,
+      });
+      res.status(201).json(createdVote);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 //send friendship request - Lau
 router.post(
@@ -224,10 +232,54 @@ router.patch();
 router.patch();
 
 //Update user profile informations
-router.patch();
+router.patch(
+  "/updateProfile/:userId",
+  isAuthenticated,
+  async (req, res, next) => {
+    const { userId } = req.params;
+    const updatedInfos = [...req.body];
+    try {
+      const user = await User.findByIdAndUpdate(userId, updatedInfos, {
+        new: true,
+      });
+      return res.status(200).json(user);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 //modify vote
-router.patch();
+router.patch(
+  "updateVote/:attendeeId/:voteId/:firstChoice/:secondChoice/:thirdChoice",
+  isAuthenticated,
+  async (req, res, next) => {
+    try {
+      const { attendeeId, voteId, firstChoice, secondChoice, thirdChoice } =
+        req.params;
+      const myVote = await Vote.findById(voteId);
+      if (myVote.attendee !== attendeeId) {
+        return res.status(401).json({
+          message: "Invalid user, you can't modify this vote.",
+        });
+      } else {
+        myVote = {
+          attendeeId,
+          firstChoice,
+          secondChoice,
+          thirdChoice,
+        };
+        // need to add conditional and to only update the new value (if empty value -> do not update with undefined)
+        const updatedVote = Vote.findByIdAndUpdate(voteId, myVote, {
+          new: true,
+        });
+        return res.status(201).json(updatedVote);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 //log out
 router.post();
