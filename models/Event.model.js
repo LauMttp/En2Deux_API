@@ -27,7 +27,7 @@ const eventSchema = new Schema({
   stage: {
     type: Schema.Types.String,
     enum: ["Information gathering", "Voting stage", "On-going", "Finished"],
-    default: "Information gathering",
+    default: "Voting stage",
   },
 });
 

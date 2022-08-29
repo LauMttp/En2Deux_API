@@ -4,11 +4,24 @@ const optionSchema = new Schema({
   event: {
     type: Schema.Types.ObjectId,
     ref: "Event",
+    required: true,
   },
-  date: Schema.Types.Date,
-  duration: Schema.Types.Number,
-  price: Schema.Types.Number,
-  location: Schema.Types.String,
+  date: {
+    type: Schema.Types.Date,
+    required: true,
+  },
+  duration: {
+    type: Schema.Types.Number,
+    required: true,
+  },
+  price: {
+    type: Schema.Types.Number,
+    required: true,
+  },
+  location: {
+    type: Schema.Types.String,
+    required: true,
+  },
 });
 
 const Option = model("Option", optionSchema);
