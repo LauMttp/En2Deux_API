@@ -72,6 +72,7 @@ router.post(
       const createdAttendee = await Attendee.create({
         event: eventId,
         user: attendeeId,
+        isAdmin,
       });
       return res.status(201).json(createdAttendee);
     } catch (error) {
@@ -210,8 +211,9 @@ router.get("/friends/:userId", isAuthenticated, async (req, res, next) => {
 });
 
 //display one event by ID (with attendees, options, votes, etc) - Kash
-router.get("/events/:idEvent", isLoggedIn, async (req, res, next) => {
-  try {
+
+router.get('/events/:idEvent', isAuthenticated, async (req, res, next) => {
+  try{
     const { idEvent } = req.params;
     const findEvent = await Event.findById({ _id: idEvent });
     const findOptions = await Option.find({ event: idEvent });
@@ -225,33 +227,41 @@ router.get("/events/:idEvent", isLoggedIn, async (req, res, next) => {
     //I'll find his 3 votes and store them in votesOf.votes
     //Each attendee will have his own object named votesOf
     //and I'll store every votesOf objects in findVotes
-    for (let attendee of findAttendees) {
-      const votesOf = {
-        attendee: attendee.name,
-        votes: [],
+    for (let attendee of findAttendees){
+      const votesObj = {
+        attendee,
+        votes : [],
       };
-      const findVotesOf = await Vote.find({ attendee: attendee._id });
-      votesOf.votes.push(findVotesOf);
-      findVotes.push(votesOf);
+      const votesOf = await Vote.find({attendee : attendee._id});
+      votesObj.votes.push(votesOf);
+      findVotes.push(votesObj);
     }
-
     const displayEvent = [findEvent, findOptions, findAttendees, findVotes];
 
-    res.json(displayEvent);
-  } catch (error) {
+    return res.json(displayEvent);
+  } catch(error) {
     next(error);
   }
 });
 
 //display one event by name - Kash
-router.get("/events", isLoggedIn, async (req, res, next) => {
-  try {
+//if user is authenticated,
+//use userid or token and find the event by name only thru user's events
+router.get('/events/:userid', isAuthenticated, async (req, res, next) => {
+  try{
     //comment recupérer l'id de l'user connecté ?
     //car je dois retourner que les events de cet User
-    const { name } = req.body;
-    const displayEvent = await Event.find({ name });
-    res.json(displayEvent);
-  } catch (error) {
+    const {userid} =req.params
+    const {name} = req.body;
+    const findAttendance = await Attendee.find({user: userid}).populate('event');
+    const arrEvents = [];
+    for(let attendance of findAttendance){
+      if(attendance.event.name === name){
+        arrEvents.push(attendance.event)
+        res.json(arrEvents);
+      }
+    }
+  } catch(error){
     next(error);
   }
 });
@@ -281,9 +291,6 @@ router.get(
     }
   }
 );
-
-//display all events linked to one user - Kash
-router.get("/events/:token");
 
 //display all events - filter by User role isAdmin or not - Lau
 router.get(
@@ -323,8 +330,29 @@ router.get(
   }
 );
 
-// display all upcoming events linked to a user - Kash
-router.get();
+// display all upcoming events linked to a Admin - Kash
+router.get('/events/upcoming/:userid', isAuthenticated, /*isAdmin,*/ async (req,res,next) => {
+  try {
+    const {userid} = req.params;
+    const findAttendanceAdmin = Attendee.find({user: userid, isAdmin:true}).populate('event');
+    const findUpcoming = await findAttendanceAdmin.event.find({author : userid._id, stage: "Upcoming" })
+    return res.json(findUpcoming)
+  } catch(error) {
+    next(error);
+  }
+});
+
+// display all upcoming events linked to a notAdmin attendee - Kash
+router.get('/events/upcoming/:userid', isAuthenticated, /*!isAdmin,*/ async (req,res,next) => {
+  try {
+    const {userid} = req.params;
+    const findAttendance = Attendee.find({user: userid, isAdmin:false}).populate('event');
+    const findUpcoming = await findAttendance.event.find({author : userid._id, stage: "Upcoming" })
+    return res.json(findUpcoming)
+  } catch(error) {
+    next(error);
+  }
+});
 
 //delete event - Lau
 router.delete(
@@ -347,8 +375,17 @@ router.delete(
     }
   }
 );
+
 //delete options from event - Kash
-router.delete();
+router.delete('event/options/delete/:id', isAuthenticated, /* isAdmin, */ async (req, res, next) => {
+  try {
+    const {id} = req.params;
+    const deleteOption = Option.findByIdAndDelete({_id : id});
+    return res.status(202).json(deleteOption);
+  } catch (error) {
+    next(error);
+  }
+});
 
 //remove attendee from an event (isAdmin = true) - Lau --> remove vote also
 router.delete(
@@ -387,7 +424,15 @@ router.delete(
 );
 
 // remove user from friend list - Kash
-router.delete();
+router.delete('/friends/:userid', isAuthenticated, async (req, res, next)=>{
+  try {
+    const {userid} = req.params;
+    const deleteFriend = await Friendship.findByIdAndDelete({_id : userid});
+    return res.json(deleteFriend);
+  } catch (error) {
+    next(error);
+  }
+});
 
 //Update event informations - Lau
 router.patch(
@@ -419,7 +464,17 @@ router.patch(
 );
 
 //Update options informations (isAdmin = true) - Kash
-router.patch();
+router.patch('event/option/:id', isAuthenticated, /*isAdmin,*/ async (req, res, next) =>{
+  try {
+    const {id} = req.params;
+    const {date, duration, price, location} = req.body;
+
+    const upOption = await Option.findByIdAndUpdate(id, {date, duration, price, location}, {new: true});
+    return res.json(upOption);
+  } catch (error) {
+    next(error);
+  }
+});
 
 //Update user profile informations
 router.patch(
