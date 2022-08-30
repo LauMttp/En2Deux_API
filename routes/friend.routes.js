@@ -1,12 +1,10 @@
 const router = require("express").Router();
-const Event = require("../models/Event.model");
-const User = require("../models/User.model");
+
 const Friendship = require("../models/Friendship.model");
-const isAuthenticated = require("../middleware/isAuthenticated");
-const friendship = require("../models/Friendship.model");
+
 
 //send friendship request - Lau
-router.post("/:requestedId", isAuthenticated, async (req, res, next) => {
+router.post("/:requestedId", async (req, res, next) => {
   try {
     const { requestedId } = req.params;
     const newFriendshipRequest = await Friendship.create({
@@ -21,7 +19,7 @@ router.post("/:requestedId", isAuthenticated, async (req, res, next) => {
 });
 
 //accept friendship request - Lau ---> is it a get request ??
-router.patch("/:friendshipId", isAuthenticated, async (req, res, next) => {
+router.patch("/:friendshipId", async (req, res, next) => {
   try {
     const { friendshipId } = req.params;
     const { answer } = req.body;
@@ -51,7 +49,7 @@ router.patch("/:friendshipId", isAuthenticated, async (req, res, next) => {
 });
 
 // display user friends - Lau
-router.get("/", isAuthenticated, async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
     const allMyFriends = await Friendship.find({
       $or: [{ requested: req.user.id }, { requestor: req.user.id }],
@@ -64,7 +62,7 @@ router.get("/", isAuthenticated, async (req, res, next) => {
 });
 
 // find user by name
-router.get("/searchbyname", isAuthenticated, async (req, res, next) => {
+router.get("/searchbyname", async (req, res, next) => {
   try {
     const { name } = req.body;
     const allMyFriendships = await Friendship.find({
@@ -87,7 +85,7 @@ router.get("/searchbyname", isAuthenticated, async (req, res, next) => {
 });
 
 // remove user from friend list - Kash
-router.delete("/:friendshipId", isAuthenticated, async (req, res, next) => {
+router.delete("/:friendshipId", async (req, res, next) => {
   try {
     const { friendshipId } = req.params;
     const friendshipToBeDeleted = await Friendship.findById(friendshipId);

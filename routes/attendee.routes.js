@@ -1,13 +1,13 @@
 const router = require("express").Router();
+
 const Event = require("../models/Event.model");
 const Attendee = require("../models/Attendee.model");
 const Vote = require("../models/Vote.model");
-const isAuthenticated = require("../middleware/isAuthenticated");
+
 
 //Invite people --> create attendee document - Kash
 router.post(
   "/:eventId/:attendeeId",
-  isAuthenticated,
   async (req, res, next) => {
     try {
       const { eventId, attendeeId } = req.params;
@@ -33,7 +33,7 @@ router.post(
 );
 
 //Answer attendee document
-router.patch("/:attendeeId", isAuthenticated, async (req, res, next) => {
+router.patch("/:attendeeId", async (req, res, next) => {
   try {
     const { attendeeId } = req.params;
     const { answer } = req.body;
@@ -64,7 +64,6 @@ router.patch("/:attendeeId", isAuthenticated, async (req, res, next) => {
 //remove attendee from an event
 router.delete(
   "/:eventId/:attendeeId",
-  isAuthenticated,
   async (req, res, next) => {
     try {
       const { eventId, attendeeId } = req.params;
