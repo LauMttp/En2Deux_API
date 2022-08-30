@@ -18,23 +18,23 @@ router.patch("/updateProfile", async (req, res, next) => {
 
 // Delete user
 router.delete("/", async (req, res, next) => {
-  try {
-      const userIsAttendees = await Attendee.find({user : req.user.id});
-      for (let attendee of userIsAttendees){
-        await Vote.findOneAndDelete({attendee : attendee.id});
-        await Attendee.findOneAndDelete(attendee);
-      }
-      const userHasFriendships = await Friendship.find({
-        $or: [{ requested: req.user.id }, { requestor: req.user.id }]
-      });
-      for (let friendship of userHasFriendships){
-        await Friendship.findOneAndDelete(friendship);
-      }
-      const deletedUser = await User.findByIdAndDelete(req.user.id);
-      return res.status(200).json(deletedUser);
-  } catch (error) {
-      next(error);
-  }
-})
+    try {
+        const userIsAttendees = await Attendee.find({user : req.user.id});
+        for (let attendee of userIsAttendees){
+          await Vote.findOneAndDelete({attendee : attendee.id});
+          await Attendee.findOneAndDelete(attendee);
+        }
+        const userHasFriendships = await Friendship.find({
+          $or: [{ requested: req.user.id }, { requestor: req.user.id }]
+        });
+        for (let friendship of userHasFriendships){
+          await Friendship.findOneAndDelete(friendship);
+        }
+        const deletedUser = await User.findByIdAndDelete(req.user.id);
+        return res.status(200).json(deletedUser);
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;
