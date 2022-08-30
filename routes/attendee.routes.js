@@ -6,7 +6,7 @@ const isAuthenticated = require("../middleware/isAuthenticated");
 
 //Invite people --> create attendee document - Kash
 router.post(
-  "requestattendance/:eventId/:attendeeId",
+  "/:eventId/:attendeeId",
   isAuthenticated,
   async (req, res, next) => {
     try {
@@ -33,19 +33,33 @@ router.post(
 );
 
 //Answer attendee document
-router.patch(
-  "answerattendance/:eventId",
-  isAuthenticated,
-  async (req, res, next) => {
-    try {
-      const { eventId } = req.params;
-      
-    } catch (error) {
-      next(error);
+router.patch("/:attendeeId", isAuthenticated, async (req, res, next) => {
+  try {
+    const { attendeeId } = req.params;
+    const { answer } = req.body;
+    const attendanceRequest = await Attendee.findById(attendeeId);
+    if (attendanceRequest.user !== req.user._id) {
+      return res.status(401).json({
+        message: "Invalid user, you can't answer this attendance request.",
+      });
+    } else if (answer === "yes") {
+      attendanceRequest.status = "accepted";
+      return res.status(201).json(attendanceRequest);
+    } else if (answer === "no") {
+      attendanceRequest.status = "declined";
+      const voteToBeDeleted = await Vote.findOne({
+        attendee: attendanceRequest._id,
+      });
+      const deletedVote = await Vote.findByIdAndDelete(voteToBeDeleted._id);
+      const deletedAttendance = await Attendee.findByIdAndDelete(
+        attendanceRequest
+      );
+      return res.status(201).json(deletedAttendance, deletedVote);
     }
+  } catch (error) {
+    next(error);
   }
-);
-//----------------->
+});
 
 //remove attendee from an event
 router.delete(

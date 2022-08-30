@@ -6,59 +6,49 @@ const isAuthenticated = require("../middleware/isAuthenticated");
 const friendship = require("../models/Friendship.model");
 
 //send friendship request - Lau
-router.post(
-  "/sendRequest/:requestedId",
-  isAuthenticated,
-  async (req, res, next) => {
-    try {
-      const { requestedId } = req.params;
-      const newFriendshipRequest = await Friendship.create({
-        requestor: req.user._id,
-        requested: requestedId,
-        status: "pending",
-      });
-      return res.status(201).json(newFriendshipRequest);
-    } catch (error) {
-      next(error);
-    }
+router.post("/:requestedId", isAuthenticated, async (req, res, next) => {
+  try {
+    const { requestedId } = req.params;
+    const newFriendshipRequest = await Friendship.create({
+      requestor: req.user._id,
+      requested: requestedId,
+      status: "pending",
+    });
+    return res.status(201).json(newFriendshipRequest);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 //accept friendship request - Lau ---> is it a get request ??
-router.patch(
-  "/answerRequest/:friendshipId",
-  isAuthenticated,
-  async (req, res, next) => {
-    try {
-      const { friendshipId } = req.params;
-      const { answer } = req.body;
-      const friendshipRequest = await Friendship.findById({
-        _id: friendshipId,
+router.patch("/:friendshipId", isAuthenticated, async (req, res, next) => {
+  try {
+    const { friendshipId } = req.params;
+    const { answer } = req.body;
+    const friendshipRequest = await Friendship.findById(friendshipId);
+    if (friendshipRequest.requested !== req.user._id) {
+      return res.status(401).json({
+        message: "Invalid user, you can't answer this friendship request.",
       });
-      if (friendshipRequest.requested !== req.user._id) {
-        return res.status(401).json({
-          message: "Invalid user, you can't answer this friendship request.",
-        });
-      } else if (
-        friendshipRequest.status === "accepted" ||
-        friendshipRequest.status === "declined"
-      ) {
-        return res
-          .status(401)
-          .json({ message: "You already answered this friendship request." });
-      } else if (answer === "yes") {
-        friendshipRequest.status = "accepted";
-        return res.status(201).json(friendshipRequest);
-      } else if (answer === "no") {
-        friendshipRequest.status = "declined";
-        const deletedRequest = await Friendship.findByIdAndDelete(friendshipId);
-        return res.status(201).json(deletedRequest);
-      }
-    } catch (error) {
-      next(error);
+    } else if (
+      friendshipRequest.status === "accepted" ||
+      friendshipRequest.status === "declined"
+    ) {
+      return res
+        .status(401)
+        .json({ message: "You already answered this friendship request." });
+    } else if (answer === "yes") {
+      friendshipRequest.status = "accepted";
+      return res.status(201).json(friendshipRequest);
+    } else if (answer === "no") {
+      friendshipRequest.status = "declined";
+      const deletedRequest = await Friendship.findByIdAndDelete(friendshipId);
+      return res.status(201).json(deletedRequest);
     }
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 // display user friends - Lau
 router.get("/", isAuthenticated, async (req, res, next) => {
