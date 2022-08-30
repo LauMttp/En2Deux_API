@@ -1,14 +1,12 @@
 const router = require("express").Router();
+
 const Event = require("../models/Event.model");
-const User = require("../models/User.model");
-const Friendship = require("../models/Friendship.model");
 const Attendee = require("../models/Attendee.model");
 const Option = require("../models/Option.model");
-const Vote = require("../models/Vote.model");
-const isAuthenticated = require("../middleware/isAuthenticated");
+
 
 //generate options - Lau
-router.post("/:eventId", isAuthenticated, async (req, res, next) => {
+router.post("/:eventId", async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const { date, duration, price, location } = req.body;
@@ -42,7 +40,7 @@ router.post("/:eventId", isAuthenticated, async (req, res, next) => {
 });
 
 //display one option with option ID - Lau
-router.get("/:eventId/:optionId", isAuthenticated, async (req, res, next) => {
+router.get("/:eventId/:optionId", async (req, res, next) => {
   try {
     const { eventId, optionId } = req.params;
     const isAttendee = await Attendee.find({
@@ -70,7 +68,6 @@ router.get("/:eventId/:optionId", isAuthenticated, async (req, res, next) => {
 // ++++ update only before vote stage
 router.patch(
   "/:id",
-  isAuthenticated,
   /*isAdmin*/ async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -90,7 +87,6 @@ router.patch(
 //delete options from event - Kash
 router.delete(
   "/:id",
-  isAuthenticated,
   /* isAdmin, */ async (req, res, next) => {
     try {
       const { id } = req.params;

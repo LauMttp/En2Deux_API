@@ -1,14 +1,9 @@
 const router = require("express").Router();
-const Event = require("../models/Event.model");
-const User = require("../models/User.model");
-const Friendship = require("../models/Friendship.model");
-const Attendee = require("../models/Attendee.model");
-const Option = require("../models/Option.model");
+
 const Vote = require("../models/Vote.model");
-const isAuthenticated = require("../middleware/isAuthenticated");
 
 //vote creation - Kash
-router.post("/:attendeeId", isAuthenticated, async (req, res, next) => {
+router.post("/:attendeeId", async (req, res, next) => {
   try {
     const { attendeeId } = req.params;
     const { firstChoice, secondChoice, thirdChoice } = req.body;
@@ -30,7 +25,7 @@ router.post("/:attendeeId", isAuthenticated, async (req, res, next) => {
 });
 
 //modify vote
-router.patch("/:voteId", isAuthenticated, async (req, res, next) => {
+router.patch("/:voteId", async (req, res, next) => {
   try {
     const { voteId } = req.params;
     const { attendeeId } = req.body;

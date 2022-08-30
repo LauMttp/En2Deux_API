@@ -1,12 +1,13 @@
 const router = require("express").Router();
+
 const Event = require("../models/Event.model");
 const Attendee = require("../models/Attendee.model");
 const Option = require("../models/Option.model");
 const Vote = require("../models/Vote.model");
-const isAuthenticated = require("../middleware/isAuthenticated");
+
 
 // Create an event  - Lau
-router.post("/", isAuthenticated, async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   try {
     const {
       name,
@@ -47,7 +48,7 @@ router.post("/", isAuthenticated, async (req, res, next) => {
 
 //display one event by ID (with attendees, options, votes, etc) - Kash
 
-router.get("/byid/:idEvent", isAuthenticated, async (req, res, next) => {
+router.get("/byid/:idEvent", async (req, res, next) => {
   try {
     const { idEvent } = req.params;
     const findEvent = await Event.findById({ _id: idEvent });
@@ -69,7 +70,7 @@ router.get("/byid/:idEvent", isAuthenticated, async (req, res, next) => {
 });
 
 //display one event by name - Kash
-router.get("/searchbyname", isAuthenticated, async (req, res, next) => {
+router.get("/searchbyname", async (req, res, next) => {
   try {
     const { name } = req.body;
     const findAttendance = await Attendee.find({ user: req.user._id }).populate(
@@ -89,7 +90,7 @@ router.get("/searchbyname", isAuthenticated, async (req, res, next) => {
 });
 
 // display all upcoming events linked to a Admin - Kash
-router.get("/upcoming/admin", isAuthenticated, async (req, res, next) => {
+router.get("/upcoming/admin", async (req, res, next) => {
   try {
     const findAttendanceAdmin = Attendee.find({
       user: req.user._id,
@@ -108,7 +109,6 @@ router.get("/upcoming/admin", isAuthenticated, async (req, res, next) => {
 // display all upcoming events linked to a notAdmin attendee - Kash
 router.get(
   "/upcoming/notadmin",
-  isAuthenticated,
   /*!isAdmin,*/ async (req, res, next) => {
     try {
       const findAttendance = Attendee.find({
@@ -129,7 +129,6 @@ router.get(
 //display all events - filter by User role isAdmin or not - Lau
 router.get(
   "allevents/byrole/:role",
-  isAuthenticated,
   async (req, res, next) => {
     try {
       const { role } = req.params;
@@ -165,7 +164,7 @@ router.get(
 );
 
 //Update event informations - Lau
-router.patch("/:eventId", isAuthenticated, async (req, res, next) => {
+router.patch("/:eventId", async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const requestorAttendance = await Attendee.find({
@@ -192,7 +191,7 @@ router.patch("/:eventId", isAuthenticated, async (req, res, next) => {
 });
 
 //delete event - Lau
-router.delete("/:eventId", isAuthenticated, async (req, res, next) => {
+router.delete("/:eventId", async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const eventToBeDeleted = await Event.findById(eventId);
