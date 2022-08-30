@@ -1,7 +1,8 @@
 const router = require("express").Router();
 
 const User = require("../models/User.model");
-
+const Attendee = require("../models/Attendee.model");
+const Friendship = require("../models/Friendship.model"); 
 
 //Update user profile informations
 router.patch("/updateProfile", async (req, res, next) => {
