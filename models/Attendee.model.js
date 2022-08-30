@@ -14,6 +14,11 @@ const attendeeSchema = new Schema({
     required: true,
     default: false,
   },
+  status: {
+    type: Schema.Types.String,
+    enum: ["accepted", "declined", "pending"],
+    default: "pending"
+  },
   // availabilities: [Schema.Types.Date],
   // budget: Schema.Types.Number,
   // location: [Schema.Types.String],

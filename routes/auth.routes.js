@@ -56,7 +56,7 @@ router.post("/login", async (req, res, next) => {
 
   const payload = { username };
 
-  const authToken = jsonwebtoken.sign(payload, process.env.TOKEN_SECRET, {
+  const authToken = jsonWebToken.sign(payload, process.env.TOKEN_SECRET, {
     algorithm: "HS256",
     expiresIn: "1h",
   });
