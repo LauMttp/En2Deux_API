@@ -1,11 +1,12 @@
 const router = require("express").Router();
-
 const Event = require("../models/Event.model");
 const Attendee = require("../models/Attendee.model");
 const Vote = require("../models/Vote.model");
+const isAttendee = require("../middleware/isAttendee");
+const isAdmin = require("../middleware/isAdmin")
 
 //Invite people --> create attendee document - Kash
-router.post("/:eventId/:attendeeId", async (req, res, next) => {
+router.post("/:eventId/:attendeeId", isAttendee, async (req, res, next) => {
   try {
     const { eventId, attendeeId } = req.params;
     // need to indicate in the req.body isAdmin: true if you want to set the attendee as admin
@@ -51,7 +52,7 @@ router.patch("/:attendeeId", async (req, res, next) => {
       const deletedAttendance = await Attendee.findByIdAndDelete(
         attendanceRequest
       );
-      return res.status(201).json(deletedAttendance, deletedVote);
+      return res.status(201).json({deletedAttendance, deletedVote});
     }
   } catch (error) {
     next(error);
@@ -82,7 +83,7 @@ router.delete("/:eventId/:attendeeId", async (req, res, next) => {
       const removeAttendee = await Attendee.findByIdAndDelete(
         attendeeToBeRemoved._id
       );
-      return res.status(201).json(deleteVote, removeAttendee);
+      return res.status(201).json({deleteVote, removeAttendee});
     }
   } catch (error) {
     next(error);
