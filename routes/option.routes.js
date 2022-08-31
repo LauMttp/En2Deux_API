@@ -5,7 +5,7 @@ const Option = require("../models/Option.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
-//generate options - Lau
+//generate options 
 router.post("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { eventId } = req.params;
@@ -30,7 +30,7 @@ router.post("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   }
 });
 
-//display one option with option ID - Lau
+//display one option with option ID 
 router.get("/:optionId", isAttendee, async (req, res, next) => {
   try {
     const { optionId } = req.params;
@@ -45,7 +45,7 @@ router.get("/:optionId", isAttendee, async (req, res, next) => {
   }
 });
 
-//Update options informations - Kash
+//Update options informations 
 // ++++ update only before vote stage
 router.patch("/:optionId", isAttendee, isAdmin, async (req, res, next) => {
   try {
@@ -66,7 +66,7 @@ router.patch("/:optionId", isAttendee, isAdmin, async (req, res, next) => {
   }
 });
 
-//delete options from event - Kash
+//delete options from event 
 router.delete("/optionId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { optionId } = req.params;

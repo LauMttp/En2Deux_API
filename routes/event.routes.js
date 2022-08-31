@@ -6,7 +6,7 @@ const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
-// Create an event  - Lau
+// Create an event
 router.post("/", async (req, res, next) => {
   try {
     const {
@@ -38,7 +38,7 @@ router.post("/", async (req, res, next) => {
         event: _id,
         user: req.user.id,
         isAdmin: true,
-        status: "accepted"
+        status: "accepted",
       });
       return res.status(201).json({ eventCreated, creatorAttendance });
     }
@@ -47,173 +47,188 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-//display one event by ID (with attendees, options, votes, etc) - Kash
-
-router.get("/byid/:eventId", async (req, res, next) => {
+//display one event by ID (with attendees, options, votes, etc)
+router.get("/byid/:eventId", isAttendee, async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const findEvent = await Event.findById(eventId);
     const findOptions = await Option.find({ event: eventId });
     const findAttendees = await Attendee.find({ event: eventId });
-
     let findVotes = [];
     for (let attendee of findAttendees) {
-      const votesOf = await Vote.find({ attendee: attendee._id });
+      const votesOf = await Vote.findOne({ attendee: attendee._id });
       findVotes.votes.push(votesOf);
     }
     const displayEvent = [findEvent, findOptions, findAttendees, findVotes];
-
     return res.json(displayEvent);
   } catch (error) {
     next(error);
   }
 });
 
-//display one event by name - Kash
+//display one event by name
 router.get("/searchbyname", async (req, res, next) => {
   try {
     const { name } = req.query;
-    
+
     const arrEvents = await Attendee.aggregate([
       {
-        '$match': {
-          'user': req.user._id
-        }
-      }, {
-        '$lookup': {
-          'from': 'events', 
-          'localField': 'event', 
-          'foreignField': '_id', 
-          'as': 'event'
-        }
-      }, {
-        '$unwind': {
-          'path': '$event', 
-          'preserveNullAndEmptyArrays': false
-        }
-      }, {
-        '$match': {
-          'event.name': name
-        }
-      }
-    ])
-
-    // check status number
+        $match: {
+          user: req.user._id,
+        },
+      },
+      {
+        $lookup: {
+          from: "events",
+          localField: "event",
+          foreignField: "_id",
+          as: "event",
+        },
+      },
+      {
+        $unwind: {
+          path: "$event",
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      {
+        $match: {
+          "event.name": name,
+        },
+      },
+    ]);
     return res.status(201).json(arrEvents);
   } catch (error) {
     next(error);
   }
 });
 
-// display all upcoming events linked to a Admin or notAdmin - Kash
+// display all upcoming events linked to a Admin or notAdmin
 router.get("/upcoming/:role", async (req, res, next) => {
   try {
     const { role } = req.params;
     if (role === "admin") {
       const adminUpcoming = await Attendee.aggregate([
         {
-          '$match': {
-            'user': req.user._id, 
-            'isAdmin': true
-          }
-        }, {
-          '$lookup': {
-            'from': 'events', 
-            'localField': 'event', 
-            'foreignField': '_id', 
-            'as': 'event'
-          }
-        }, {
-          '$unwind': {
-            'path': '$event', 
-            'preserveNullAndEmptyArrays': false
-          }
-        }, {
-          '$match': {
-            'event.stage': 'Upcoming'
-          }
-        }
+          $match: {
+            user: req.user._id,
+            isAdmin: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "events",
+            localField: "event",
+            foreignField: "_id",
+            as: "event",
+          },
+        },
+        {
+          $unwind: {
+            path: "$event",
+            preserveNullAndEmptyArrays: false,
+          },
+        },
+        {
+          $match: {
+            "event.stage": "Upcoming",
+          },
+        },
       ]);
       return res.json(adminUpcoming);
     } else if (role === "notAdmin") {
       const notAdminUpcoming = await Attendee.aggregate([
         {
-          '$match': {
-            'user': req.user._id, 
-            'isAdmin': false
-          }
-        }, {
-          '$lookup': {
-            'from': 'events', 
-            'localField': 'event', 
-            'foreignField': '_id', 
-            'as': 'event'
-          }
-        }, {
-          '$unwind': {
-            'path': '$event', 
-            'preserveNullAndEmptyArrays': false
-          }
-        }, {
-          '$match': {
-            'event.stage': 'Upcoming'
-          }
-        }
+          $match: {
+            user: req.user._id,
+            isAdmin: false,
+          },
+        },
+        {
+          $lookup: {
+            from: "events",
+            localField: "event",
+            foreignField: "_id",
+            as: "event",
+          },
+        },
+        {
+          $unwind: {
+            path: "$event",
+            preserveNullAndEmptyArrays: false,
+          },
+        },
+        {
+          $match: {
+            "event.stage": "Upcoming",
+          },
+        },
       ]);
       return res.json(notAdminUpcoming);
+    } else {
+      return res
+        .status(404)
+        .json({
+          message:
+            "Request not found. Please select upcoming event as Admin or Attendee.",
+        });
     }
   } catch (error) {
     next(error);
   }
 });
 
-//display all events - filter by User role isAdmin or not - Lau
+//display all events - filter by User role isAdmin or not
 router.get("allevents/byrole/:role", async (req, res, next) => {
   try {
     const { role } = req.params;
     if (role === "admin") {
       const administratedEvents = await Attendee.aggregate([
         {
-          '$match': {
-            'user': new ObjectId('630e09b09e02d32d1de7e830'), 
-            'isAdmin': true
-          }
-        }, {
-          '$lookup': {
-            'from': 'events', 
-            'localField': 'event', 
-            'foreignField': '_id', 
-            'as': 'event'
-          }
-        }, {
-          '$unwind': {
-            'path': '$event', 
-            'preserveNullAndEmptyArrays': false
-          }
-        }
+          $match: {
+            user: new ObjectId("630e09b09e02d32d1de7e830"),
+            isAdmin: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "events",
+            localField: "event",
+            foreignField: "_id",
+            as: "event",
+          },
+        },
+        {
+          $unwind: {
+            path: "$event",
+            preserveNullAndEmptyArrays: false,
+          },
+        },
       ]);
-    return res.status(201).json(await Promise.all(administratedEvents));
+      return res.status(201).json(await Promise.all(administratedEvents));
     } else if (role === "notAdmin") {
       const notAdministratedEvents = await Attendee.aggregate([
-      {
-        '$match': {
-          'user': new ObjectId('630e09b09e02d32d1de7e830'), 
-          'isAdmin': false
-        }
-      }, {
-        '$lookup': {
-          'from': 'events', 
-          'localField': 'event', 
-          'foreignField': '_id', 
-          'as': 'event'
-        }
-      }, {
-        '$unwind': {
-          'path': '$event', 
-          'preserveNullAndEmptyArrays': false
-        }
-      }
-    ]);
+        {
+          $match: {
+            user: new ObjectId("630e09b09e02d32d1de7e830"),
+            isAdmin: false,
+          },
+        },
+        {
+          $lookup: {
+            from: "events",
+            localField: "event",
+            foreignField: "_id",
+            as: "event",
+          },
+        },
+        {
+          $unwind: {
+            path: "$event",
+            preserveNullAndEmptyArrays: false,
+          },
+        },
+      ]);
       return res.status(201).json(await Promise.all(notAdministratedEvents));
     }
   } catch (error) {
@@ -221,7 +236,7 @@ router.get("allevents/byrole/:role", async (req, res, next) => {
   }
 });
 
-//Update event informations - Lau
+//Update event informations
 router.patch("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { eventId } = req.params;
@@ -240,7 +255,7 @@ router.patch("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   }
 });
 
-//delete event - Lau
+//delete event
 router.delete("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { eventId } = req.params;
