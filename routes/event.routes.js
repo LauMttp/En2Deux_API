@@ -185,50 +185,46 @@ router.get("allevents/byrole/:role", async (req, res, next) => {
     if (role === "admin") {
       const administratedEvents = await Attendee.aggregate([
         {
-          $match: {
-            user: new ObjectId("630e09b09e02d32d1de7e830"),
-            isAdmin: true,
-          },
-        },
-        {
-          $lookup: {
-            from: "events",
-            localField: "event",
-            foreignField: "_id",
-            as: "event",
-          },
-        },
-        {
-          $unwind: {
-            path: "$event",
-            preserveNullAndEmptyArrays: false,
-          },
-        },
+          '$match': {
+            'user': req.user._id, 
+            'isAdmin': true
+          }
+        }, {
+          '$lookup': {
+            'from': 'events', 
+            'localField': 'event', 
+            'foreignField': '_id', 
+            'as': 'event'
+          }
+        }, {
+          '$unwind': {
+            'path': '$event', 
+            'preserveNullAndEmptyArrays': false
+          }
+        }
       ]);
       return res.status(201).json(await Promise.all(administratedEvents));
     } else if (role === "notAdmin") {
       const notAdministratedEvents = await Attendee.aggregate([
-        {
-          $match: {
-            user: new ObjectId("630e09b09e02d32d1de7e830"),
-            isAdmin: false,
-          },
-        },
-        {
-          $lookup: {
-            from: "events",
-            localField: "event",
-            foreignField: "_id",
-            as: "event",
-          },
-        },
-        {
-          $unwind: {
-            path: "$event",
-            preserveNullAndEmptyArrays: false,
-          },
-        },
-      ]);
+      {
+        '$match': {
+          'user': req.user._id, 
+          'isAdmin': false
+        }
+      }, {
+        '$lookup': {
+          'from': 'events', 
+          'localField': 'event', 
+          'foreignField': '_id', 
+          'as': 'event'
+        }
+      }, {
+        '$unwind': {
+          'path': '$event', 
+          'preserveNullAndEmptyArrays': false
+        }
+      }
+    ]);
       return res.status(201).json(await Promise.all(notAdministratedEvents));
     }
   } catch (error) {
