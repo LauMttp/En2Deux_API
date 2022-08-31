@@ -2,7 +2,6 @@ const router = require("express").Router();
 
 const Friendship = require("../models/Friendship.model");
 
-
 //send friendship request - Lau
 router.post("/:requestedId", async (req, res, next) => {
   try {
