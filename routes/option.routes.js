@@ -4,7 +4,6 @@ const Event = require("../models/Event.model");
 const Attendee = require("../models/Attendee.model");
 const Option = require("../models/Option.model");
 
-
 //generate options - Lau
 router.post("/:eventId", async (req, res, next) => {
   try {
@@ -67,17 +66,23 @@ router.get("/:eventId/:optionId", async (req, res, next) => {
 //Update options informations (isAdmin = true) - Kash
 // ++++ update only before vote stage
 router.patch(
-  "/:id",
+  "/:optionId",
   /*isAdmin*/ async (req, res, next) => {
     try {
-      const { id } = req.params;
-      const { date, duration, price, location } = req.body;
+      const { optionId } = req.params;
+      // const { date, duration, price, location } = req.body;
+      const { optionDatas } = { ...req.body };
+      for (let key in optionDatas) {
+        if (optionDatas[key] === "") {
+          delete optionDatas[key];
+        }
+      }
       const updateOption = await Option.findByIdAndUpdate(
-        id,
-        { date, duration, price, location },
+        optionId,
+        optionDatas,
         { new: true }
       );
-      return res.json(updateOption);
+      return res.status(200).json(updateOption);
     } catch (error) {
       next(error);
     }
@@ -86,12 +91,12 @@ router.patch(
 
 //delete options from event - Kash
 router.delete(
-  "/:id",
+  "/optionId",
   /* isAdmin, */ async (req, res, next) => {
     try {
-      const { id } = req.params;
-      const deleteOption = Option.findByIdAndDelete({ _id: id });
-      return res.status(202).json(deleteOption);
+      const { optionId } = req.params;
+      const deleteOption = Option.findByIdAndDelete(optionId);
+      return res.status(201).json(deleteOption);
     } catch (error) {
       next(error);
     }

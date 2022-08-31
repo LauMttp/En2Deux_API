@@ -5,7 +5,6 @@ const Attendee = require("../models/Attendee.model");
 const Option = require("../models/Option.model");
 const Vote = require("../models/Vote.model");
 
-
 // Create an event  - Lau
 router.post("/", async (req, res, next) => {
   try {
@@ -48,13 +47,12 @@ router.post("/", async (req, res, next) => {
 
 //display one event by ID (with attendees, options, votes, etc) - Kash
 
-router.get("/byid/:idEvent", async (req, res, next) => {
+router.get("/byid/:eventId", async (req, res, next) => {
   try {
-    const { idEvent } = req.params;
-    const findEvent = await Event.findById({ _id: idEvent });
-    const findOptions = await Option.find({ event: idEvent });
-
-    const findAttendees = await Attendee.find({ event: idEvent });
+    const { eventId } = req.params;
+    const findEvent = await Event.findById(eventId);
+    const findOptions = await Option.find({ event: eventId });
+    const findAttendees = await Attendee.find({ event: eventId });
 
     let findVotes = [];
     for (let attendee of findAttendees) {
@@ -82,7 +80,7 @@ router.get("/searchbyname", async (req, res, next) => {
         arrEvents.push(attendance.event);
       }
     }
-    // chech status number
+    // check status number
     return res.status(201).json(arrEvents);
   } catch (error) {
     next(error);
@@ -96,6 +94,7 @@ router.get("/upcoming/admin", async (req, res, next) => {
       user: req.user._id,
       isAdmin: true,
     }).populate("event");
+    // ------------- > CAN'T USE FIND WITH A VARIABLE --> TO BE UPDATED
     const findUpcoming = await findAttendanceAdmin.event.find({
       author: req.user._id,
       stage: "Upcoming",
@@ -107,61 +106,56 @@ router.get("/upcoming/admin", async (req, res, next) => {
 });
 
 // display all upcoming events linked to a notAdmin attendee - Kash
-router.get(
-  "/upcoming/notadmin",
-  /*!isAdmin,*/ async (req, res, next) => {
-    try {
-      const findAttendance = Attendee.find({
-        user: req.user._id,
-        isAdmin: false,
-      }).populate("event");
-      const findUpcoming = await findAttendance.event.find({
-        author: req.user._id,
-        stage: "Upcoming",
-      });
-      return res.json(findUpcoming);
-    } catch (error) {
-      next(error);
-    }
+router.get("/upcoming/notadmin", async (req, res, next) => {
+  try {
+    const findAttendance = Attendee.find({
+      user: req.user._id,
+      isAdmin: false,
+    }).populate("event");
+    // ------------- > CAN'T USE FIND WITH A VARIABLE --> TO BE UPDATED
+    const findUpcoming = await findAttendance.event.find({
+      author: req.user._id,
+      stage: "Upcoming",
+    });
+    return res.json(findUpcoming);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 //display all events - filter by User role isAdmin or not - Lau
-router.get(
-  "allevents/byrole/:role",
-  async (req, res, next) => {
-    try {
-      const { role } = req.params;
-      if (role === "admin") {
-        const adminAttendances = await Attendee.find({
-          user: req.user._id,
-          isAdmin: true,
-        });
-        const administratedEvents = [];
-        adminAttendances.forEach((attendance) => {
-          const { event } = attendance;
-          const adminEvent = Event.findById(event);
-          administratedEvents.push(adminEvent);
-        });
-        return res.status(201).json(await Promise.all(administratedEvents));
-      } else if (role === "notAdmin") {
-        const notAdminAttendances = await Attendee.find({
-          user: req.user._id,
-          isAdmin: false,
-        });
-        const notAdministratedEvents = [];
-        notAdminAttendances.forEach((attendance) => {
-          const { event } = attendance;
-          const notAdminEvent = Event.findById(event);
-          notAdministratedEvents.push(notAdminEvent);
-        });
-        return res.status(201).json(await Promise.all(notAdministratedEvents));
-      }
-    } catch (error) {
-      next(error);
+router.get("allevents/byrole/:role", async (req, res, next) => {
+  try {
+    const { role } = req.params;
+    if (role === "admin") {
+      const adminAttendances = await Attendee.find({
+        user: req.user._id,
+        isAdmin: true,
+      });
+      const administratedEvents = [];
+      adminAttendances.forEach((attendance) => {
+        // const { event } = attendance; --> CHECK AND DELETE
+        const adminEvent = Event.findById(attendance.event);
+        administratedEvents.push(adminEvent);
+      });
+      return res.status(201).json(await Promise.all(administratedEvents));
+    } else if (role === "notAdmin") {
+      const notAdminAttendances = await Attendee.find({
+        user: req.user._id,
+        isAdmin: false,
+      });
+      const notAdministratedEvents = [];
+      notAdminAttendances.forEach((attendance) => {
+        // const { event } = attendance; ---> CAN DIRECTLY CALL attendance.event CHECK AND DELETE
+        const notAdminEvent = Event.findById(attendance.event);
+        notAdministratedEvents.push(notAdminEvent);
+      });
+      return res.status(201).json(await Promise.all(notAdministratedEvents));
     }
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 //Update event informations - Lau
 router.patch("/:eventId", async (req, res, next) => {
@@ -182,7 +176,11 @@ router.patch("/:eventId", async (req, res, next) => {
           delete updatedInfos[key];
         }
       }
-      const updatedEvent = await Event.findByIdAndUpdate(eventId, updatedInfos);
+      const updatedEvent = await Event.findByIdAndUpdate(
+        eventId,
+        updatedInfos,
+        { new: true }
+      );
       return res.status(200).json(updatedEvent);
     }
   } catch (error) {
