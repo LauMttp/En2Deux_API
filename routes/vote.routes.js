@@ -1,6 +1,7 @@
 const router = require("express").Router();
-
 const Vote = require("../models/Vote.model");
+const isAttendee = require("../middleware/isAttendee");
+const isAdmin = require("../middleware/isAdmin");
 
 //vote creation - Kash
 router.post("/:attendeeId", async (req, res, next) => {

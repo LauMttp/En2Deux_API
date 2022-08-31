@@ -1,5 +1,3 @@
-const jsonwebtoken = require("jsonwebtoken");
-const User = require("../models/User.model");
 const Attendee = require("../models/Attendee.model");
 
 const isAttendee = async (req, res, next) => {

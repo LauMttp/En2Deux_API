@@ -1,9 +1,10 @@
 const router = require("express").Router();
-
 const Event = require("../models/Event.model");
 const Attendee = require("../models/Attendee.model");
 const Option = require("../models/Option.model");
 const Vote = require("../models/Vote.model");
+const isAttendee = require("../middleware/isAttendee");
+const isAdmin = require("../middleware/isAdmin")
 
 // Create an event  - Lau
 router.post("/", async (req, res, next) => {
@@ -38,7 +39,7 @@ router.post("/", async (req, res, next) => {
         user: req.user.id,
         isAdmin: true,
       });
-      return res.status(201).json(eventCreated, creatorAttendance);
+      return res.status(201).json({eventCreated, creatorAttendance});
     }
   } catch (error) {
     next(error);
