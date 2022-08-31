@@ -70,7 +70,7 @@ const isAttendee = async (req, res, next) => {
       if (!findAttendance) {
         return res
           .status(401)
-          .json({ message: "You are not attending this event" });
+          .json({ message: "Bad user request" });
       } else {
         req.attendee = findAttendance;
         next();
