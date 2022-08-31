@@ -1,9 +1,12 @@
 const Attendee = require("../models/Attendee.model");
+const Option = require("../models/Option.model");
+const Vote = require("../models/Vote.model");
 
 const isAttendee = async (req, res, next) => {
   const { eventId } = req.params;
   const { attendeeId } = req.params;
   const { optionId } = req.params;
+  const { voteId } = req.params;
   if (eventId) {
     try {
       const findAttendance = await Attendee.find({
@@ -44,6 +47,24 @@ const isAttendee = async (req, res, next) => {
       const option = await Option.findById(optionId);
       const findAttendance = await Attendee.find({
         event: option.event,
+        user: req.user._id,
+      });
+      if (!findAttendance) {
+        return res
+          .status(401)
+          .json({ message: "You are not attending this event" });
+      } else {
+        req.attendee = findAttendance;
+        next();
+      }
+    } catch (error) {
+      next(error);
+    }
+  } else if (voteId) {
+    try {
+      const vote = await Vote.findById(voteId);
+      const findAttendance = await Attendee.find({
+        _id: vote.attendee,
         user: req.user._id,
       });
       if (!findAttendance) {
