@@ -2,7 +2,7 @@ const router = require("express").Router();
 
 const Friendship = require("../models/Friendship.model");
 
-//send friendship request - Lau
+//send friendship request
 router.post("/:requestedId", async (req, res, next) => {
   try {
     const { requestedId } = req.params;
@@ -17,13 +17,13 @@ router.post("/:requestedId", async (req, res, next) => {
   }
 });
 
-//accept friendship request - Lau ---> is it a get request ??
+//accept friendship request
 router.patch("/:friendshipId", async (req, res, next) => {
   try {
     const { friendshipId } = req.params;
     const { answer } = req.body;
     const friendshipRequest = await Friendship.findById(friendshipId);
-    if (friendshipRequest.requested !== req.user._id) {
+    if (friendshipRequest.requested.toString() !== req.user.id) {
       return res.status(401).json({
         message: "Invalid user, you can't answer this friendship request.",
       });
@@ -47,7 +47,7 @@ router.patch("/:friendshipId", async (req, res, next) => {
   }
 });
 
-// display user friends - Lau
+// display user friends
 router.get("/", async (req, res, next) => {
   try {
     const allMyFriends = await Friendship.find({
@@ -83,7 +83,7 @@ router.get("/searchbyname", async (req, res, next) => {
   }
 });
 
-// remove user from friend list - Kash
+// remove user from friend list
 router.delete("/:friendshipId", async (req, res, next) => {
   try {
     const { friendshipId } = req.params;

@@ -4,7 +4,7 @@ const Attendee = require("../models/Attendee.model");
 const Friendship = require("../models/Friendship.model");
 
 //Update user profile informations
-router.patch("/updateProfile", async (req, res, next) => {
+router.patch("/", async (req, res, next) => {
   const updatedInfos = { ...req.body };
   try {
     const user = await User.findByIdAndUpdate(req.user._id, updatedInfos, {

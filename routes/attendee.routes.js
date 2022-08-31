@@ -5,7 +5,7 @@ const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
-//Invite people --> create attendee document - Kash
+//Invite people --> create attendee document 
 router.post(
   "/:eventId/:userToAddId",
   isAttendee,
