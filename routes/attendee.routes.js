@@ -56,7 +56,7 @@ router.delete("/:attendeeId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { attendeeId } = req.params;
     const attendeeToBeRemoved = await Attendee.findById(attendeeId);
-    const voteToBeDeleted = await Vote.find({
+    const voteToBeDeleted = await Vote.findOne({
       attendee: attendeeToBeRemoved._id,
     });
     const deleteVote = await Vote.findByIdAndDelete(voteToBeDeleted._id);

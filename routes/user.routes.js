@@ -3,7 +3,6 @@ const User = require("../models/User.model");
 const Attendee = require("../models/Attendee.model");
 const Friendship = require("../models/Friendship.model");
 
-
 //Update user profile informations
 router.patch("/updateProfile", async (req, res, next) => {
   const updatedInfos = { ...req.body };
@@ -22,8 +21,8 @@ router.delete("/", async (req, res, next) => {
   try {
     const userAttendees = await Attendee.find({ user: req.user.id });
     for (let attendee of userAttendees) {
-      await Vote.findOneAndDelete(attendee._id);
-      await Attendee.findOneAndDelete(attendee);
+      await Vote.findOneAndDelete({ attendee: attendee._id });
+      await Attendee.findByIdAndDelete(attendee._id);
     }
     const userFriendships = await Friendship.find({
       $or: [{ requested: req.user.id }, { requestor: req.user.id }],

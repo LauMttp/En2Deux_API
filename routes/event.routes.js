@@ -4,7 +4,7 @@ const Attendee = require("../models/Attendee.model");
 const Option = require("../models/Option.model");
 const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
-const isAdmin = require("../middleware/isAdmin")
+const isAdmin = require("../middleware/isAdmin");
 
 // Create an event  - Lau
 router.post("/", async (req, res, next) => {
@@ -39,7 +39,7 @@ router.post("/", async (req, res, next) => {
         user: req.user.id,
         isAdmin: true,
       });
-      return res.status(201).json({eventCreated, creatorAttendance});
+      return res.status(201).json({ eventCreated, creatorAttendance });
     }
   } catch (error) {
     next(error);
@@ -159,49 +159,30 @@ router.get("allevents/byrole/:role", async (req, res, next) => {
 });
 
 //Update event informations - Lau
-router.patch("/:eventId", async (req, res, next) => {
+router.patch("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { eventId } = req.params;
-    const requestorAttendance = await Attendee.find({
-      event: eventId,
-      user: req.user._id,
-    });
-    if (!requestorAttendance.isAdmin) {
-      return res.status(400).json({
-        message: "Access denied. You can't modify this event.",
-      });
-    } else {
-      const updatedInfos = { ...req.body };
-      for (let key in updatedInfos) {
-        if (updatedInfos[key] === "" && key !== "description") {
-          delete updatedInfos[key];
-        }
+    const updatedInfos = { ...req.body };
+    for (let key in updatedInfos) {
+      if (updatedInfos[key] === "") {
+        delete updatedInfos[key];
       }
-      const updatedEvent = await Event.findByIdAndUpdate(
-        eventId,
-        updatedInfos,
-        { new: true }
-      );
-      return res.status(200).json(updatedEvent);
     }
+    const updatedEvent = await Event.findByIdAndUpdate(eventId, updatedInfos, {
+      new: true,
+    });
+    return res.status(200).json(updatedEvent);
   } catch (error) {
     next(error);
   }
 });
 
 //delete event - Lau
-router.delete("/:eventId", async (req, res, next) => {
+router.delete("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { eventId } = req.params;
-    const eventToBeDeleted = await Event.findById(eventId);
-    if (eventToBeDeleted.author.toString() !== req.user.id) {
-      return res
-        .status(400)
-        .json({ message: "Access denied. You can't delete this event." });
-    } else if (eventToBeDeleted.author.toString() === userId) {
-      const deletedEvent = await Event.findByIdAndDelete(eventId);
-      return res.status(200).json(deletedEvent);
-    }
+    const deletedEvent = await Event.findByIdAndDelete(eventId);
+    return res.status(200).json(deletedEvent);
   } catch (error) {
     next(error);
   }
