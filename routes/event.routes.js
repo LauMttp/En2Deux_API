@@ -5,34 +5,47 @@ const Option = require("../models/Option.model");
 const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
+const createJob = require("./utils/cronJobEvent");
 
 // Create an event
 router.post("/", async (req, res, next) => {
   try {
-    const {
-      name,
-      description,
-      // startingDate,
-      // durationInHours,
-      // location,
-      // budget,
-      votingStageDeadline,
-    } = req.body;
-    if (!name) {
+    const newEvent = { ...req.body };
+    newEvent.author = req.user.id;
+    if (!newEvent.name) {
       return res
         .status(400)
         .json({ message: "Please provide a valid event name." });
-    } else {
-      const eventCreated = await Event.create({
-        name,
-        author: req.user.id,
-        description,
-        // startingDate,
-        // durationInHours,
-        // location,
-        // budget,
-        votingStageDeadline,
+    } else if (
+      (!newEvent.startingDate && !newEvent.dateSuggestion) ||
+      (!newEvent.durationInHours && !newEvent.dateSuggestion)
+    ) {
+      return res.status(400).json({
+        message:
+          "Please provide either the event's date and duration or a time range for your guests to indicate their availabilities.",
       });
+    } else if (!newEvent.location && !newEvent.locationSuggestions) {
+      return res.status(400).json({
+        message:
+          "Please provide either the event's location or several proposals for which your guests will be able to vote.",
+      });
+    } else if (
+      (!newEvent.startingDate &&
+        !newEvent.durationInHours &&
+        !newEvent.informationGatheringDeadline) ||
+      (!newEvent.location && !newEvent.informationGatheringDeadline)
+    ) {
+      return res.status(400).json({
+        message: "Please provide an information gathering deadline.",
+      });
+    } else if (!newEvent.votingStageDeadline) {
+      return res.status(400).json({
+        message: "Please provide a voting stage deadline.",
+      });
+    } else if (!newEvent.informationGatheringDeadline) {
+      newEvent.stage = "Voting stage";
+    } else {
+      const eventCreated = await Event.create(newEvent);
       const { _id } = eventCreated;
       const creatorAttendance = await Attendee.create({
         event: _id,
@@ -40,6 +53,7 @@ router.post("/", async (req, res, next) => {
         isAdmin: true,
         status: "accepted",
       });
+      createJob(eventCreated);
       return res.status(201).json({ eventCreated, creatorAttendance });
     }
   } catch (error) {
@@ -166,12 +180,10 @@ router.get("/upcoming/:role", async (req, res, next) => {
       ]);
       return res.json(notAdminUpcoming);
     } else {
-      return res
-        .status(404)
-        .json({
-          message:
-            "Request not found. Please select upcoming event as Admin or Attendee.",
-        });
+      return res.status(404).json({
+        message:
+          "Request not found. Please select upcoming event as Admin or Attendee.",
+      });
     }
   } catch (error) {
     next(error);
@@ -185,46 +197,50 @@ router.get("allevents/byrole/:role", async (req, res, next) => {
     if (role === "admin") {
       const administratedEvents = await Attendee.aggregate([
         {
-          '$match': {
-            'user': req.user._id, 
-            'isAdmin': true
-          }
-        }, {
-          '$lookup': {
-            'from': 'events', 
-            'localField': 'event', 
-            'foreignField': '_id', 
-            'as': 'event'
-          }
-        }, {
-          '$unwind': {
-            'path': '$event', 
-            'preserveNullAndEmptyArrays': false
-          }
-        }
+          $match: {
+            user: req.user._id,
+            isAdmin: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "events",
+            localField: "event",
+            foreignField: "_id",
+            as: "event",
+          },
+        },
+        {
+          $unwind: {
+            path: "$event",
+            preserveNullAndEmptyArrays: false,
+          },
+        },
       ]);
       return res.status(201).json(await Promise.all(administratedEvents));
     } else if (role === "notAdmin") {
       const notAdministratedEvents = await Attendee.aggregate([
-      {
-        '$match': {
-          'user': req.user._id, 
-          'isAdmin': false
-        }
-      }, {
-        '$lookup': {
-          'from': 'events', 
-          'localField': 'event', 
-          'foreignField': '_id', 
-          'as': 'event'
-        }
-      }, {
-        '$unwind': {
-          'path': '$event', 
-          'preserveNullAndEmptyArrays': false
-        }
-      }
-    ]);
+        {
+          $match: {
+            user: req.user._id,
+            isAdmin: false,
+          },
+        },
+        {
+          $lookup: {
+            from: "events",
+            localField: "event",
+            foreignField: "_id",
+            as: "event",
+          },
+        },
+        {
+          $unwind: {
+            path: "$event",
+            preserveNullAndEmptyArrays: false,
+          },
+        },
+      ]);
       return res.status(201).json(await Promise.all(notAdministratedEvents));
     }
   } catch (error) {
