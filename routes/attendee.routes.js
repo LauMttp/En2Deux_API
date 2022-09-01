@@ -31,11 +31,24 @@ router.post(
 router.patch("/:attendeeId", isAttendee, async (req, res, next) => {
   try {
     const { answer } = req.body;
+    const { attendeeId } = req.params;
+    const attendeeRequest = await Attendee.findById(attendeeId);
+
+    console.log(attendeeRequest.status);
+
+    if (attendeeRequest === null) {
+      return res.status(401).json({message: "This attendee request does not exist."});
+    } else if (attendeeRequest.user.toString() !== req.user.id) {
+      return res.status(401).json({message: "Invalid user, you can't answer this attendee request.",});
+    } else if (attendeeRequest.status === "accepted" || attendeeRequest.status === "declined") {
+      return res.status(401).json({ message: "You already answered this attendee request." });
+    }
     if (answer === "yes") {
-      req.attendee.status = "accepted";
-      return res.status(201).json(req.attendee);
+      const attendeeReqAccepted = await Attendee.findByIdAndUpdate(attendeeId, {status : "accepted"}, {new: true});
+      return res.status(201).json(attendeeReqAccepted);
     } else if (answer === "no") {
-      req.attendee.status = "declined";
+      const attendeeReqDeclined = await Attendee.findByIdAndUpdate(attendeeId, {status : "declined"}, {new: true});
+      res.status(201).json(attendeeReqDeclined);
       const voteToBeDeleted = await Vote.findOne({
         attendee: req.attendee._id,
       });
@@ -54,7 +67,9 @@ router.patch("/:attendeeId", isAttendee, async (req, res, next) => {
 router.delete("/:attendeeId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { attendeeId } = req.params;
+
     const attendeeToBeRemoved = await Attendee.findById(attendeeId);
+
     const voteToBeDeleted = await Vote.findOne({
       attendee: attendeeToBeRemoved._id,
     });
