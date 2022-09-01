@@ -71,16 +71,17 @@ router.get("/byid/:eventId", isAttendee, async (req, res, next) => {
     let findVotes = [];
     for (let attendee of findAttendees) {
       const votesOf = await Vote.findOne({ attendee: attendee._id });
-      findVotes.votes.push(votesOf);
+      console.log(votesOf);
+      findVotes.push(votesOf);
     }
     const displayEvent = [findEvent, findOptions, findAttendees, findVotes];
-    return res.json(displayEvent);
+    return res.json({displayEvent});
   } catch (error) {
     next(error);
   }
 });
 
-//display one event by name
+//display events by name
 router.get("/searchbyname", async (req, res, next) => {
   try {
     const { name } = req.query;
@@ -99,11 +100,16 @@ router.get("/searchbyname", async (req, res, next) => {
           as: "event",
         },
       },
+      // {
+      //   $unwind: {
+      //     path: "$event",
+      //     preserveNullAndEmptyArrays: true,
+      //   },
+      // },
       {
-        $unwind: {
-          path: "$event",
-          preserveNullAndEmptyArrays: false,
-        },
+        $project: {
+          "event":1
+        }
       },
       {
         $match: {
@@ -194,6 +200,7 @@ router.get("/upcoming/:role", async (req, res, next) => {
 router.get("allevents/byrole/:role", async (req, res, next) => {
   try {
     const { role } = req.params;
+    console.log(role);
     if (role === "admin") {
       const administratedEvents = await Attendee.aggregate([
         {

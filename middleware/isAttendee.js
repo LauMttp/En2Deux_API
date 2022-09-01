@@ -27,6 +27,7 @@ const isAttendee = async (req, res, next) => {
   } else if (attendeeId) {
     try {
       const tierceAttendance = await Attendee.findById(attendeeId);
+
       const findAttendance = await Attendee.findOne({
         event: tierceAttendance.event,
         user: req.user._id,
