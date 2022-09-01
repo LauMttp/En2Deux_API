@@ -1,11 +1,10 @@
 const router = require("express").Router();
-const Event = require("../models/Event.model");
 const Attendee = require("../models/Attendee.model");
 const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
-//Invite people --> create attendee document 
+//Invite people --> create attendee document
 router.post(
   "/:eventId/:userToAddId",
   isAttendee,

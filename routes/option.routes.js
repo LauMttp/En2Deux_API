@@ -1,6 +1,4 @@
 const router = require("express").Router();
-const Event = require("../models/Event.model");
-const Attendee = require("../models/Attendee.model");
 const Option = require("../models/Option.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");

@@ -1,7 +1,6 @@
 const router = require("express").Router();
 const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
-const isAdmin = require("../middleware/isAdmin");
 
 //vote creation
 router.post("/:attendeeId", isAttendee, async (req, res, next) => {
@@ -20,6 +19,23 @@ router.post("/:attendeeId", isAttendee, async (req, res, next) => {
       thirdChoice,
     });
     res.status(201).json(createdVote);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// get vote related to one option sorted by first/second/third choice
+router.get("/byoption/:optionId", isAttendee, async (req, res, next) => {
+  try {
+    const { optionId } = req.params;
+    const votesOfMyOption = await Vote.find({
+      $or: [
+        { firstChoice: optionId },
+        { secondChoice: optionId },
+        { thirdChoice: optionId },
+      ],
+    });
+    return res.status(201).json(votesOfMyOption);
   } catch (error) {
     next(error);
   }

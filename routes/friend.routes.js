@@ -1,5 +1,4 @@
 const router = require("express").Router();
-
 const Friendship = require("../models/Friendship.model");
 
 //send friendship request

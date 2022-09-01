@@ -17,11 +17,11 @@ const attendeeSchema = new Schema({
   status: {
     type: Schema.Types.String,
     enum: ["accepted", "declined", "pending"],
-    default: "pending"
+    default: "pending",
   },
-  // availabilities: [Schema.Types.Date],
-  // budget: Schema.Types.Number,
-  // location: [Schema.Types.String],
+  availabilities: [Schema.Types.Date],
+  budget: Schema.Types.Number,
+  location: [Schema.Types.String],
 });
 
 const Attendee = model("Attendee", attendeeSchema);
