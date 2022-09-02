@@ -3,7 +3,7 @@ const Option = require("../models/Option.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
-//generate options 
+//generate one option 
 router.post("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { eventId } = req.params;
@@ -49,7 +49,7 @@ router.patch("/:optionId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { optionId } = req.params;
     // const { date, duration, price, location } = req.body;
-    const { optionDatas } = { ...req.body };
+    const optionDatas = { ...req.body };
     for (let key in optionDatas) {
       if (optionDatas[key] === "") {
         delete optionDatas[key];
@@ -65,10 +65,10 @@ router.patch("/:optionId", isAttendee, isAdmin, async (req, res, next) => {
 });
 
 //delete options from event 
-router.delete("/optionId", isAttendee, isAdmin, async (req, res, next) => {
+router.delete("/:optionId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { optionId } = req.params;
-    const deleteOption = Option.findByIdAndDelete(optionId);
+    const deleteOption = await Option.findByIdAndDelete(optionId);
     return res.status(201).json(deleteOption);
   } catch (error) {
     next(error);

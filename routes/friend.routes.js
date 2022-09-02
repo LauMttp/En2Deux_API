@@ -8,9 +8,9 @@ router.post("/:requestedId", async (req, res, next) => {
     const friendshipExist = await Friendship.findOne({
       $or: [
         { requested: req.user.id, requestor: requestedId },
-        { requestor: requestedId, requestor: req.user.id }]
+        { requested: requestedId, requestor: req.user.id }]
     })
-    if(friendshipExist !== null) {
+    if(friendshipExist) {
       return res.status(400).json({ message: "You or your friend already send a freindship request." });
     }
     const newFriendshipRequest = await Friendship.create({
@@ -31,7 +31,7 @@ router.patch("/:friendshipId", async (req, res, next) => {
     const { answer } = req.body;
     const friendshipRequest = await Friendship.findById(friendshipId);
     console.log(friendshipRequest);
-    if (friendshipRequest === null) {
+    if (!friendshipRequest) {
       return res.status(401).json({message: "This friendship request does not exist."});
     } else if (friendshipRequest.requested.toString() !== req.user.id) {
       return res.status(401).json({
@@ -75,11 +75,12 @@ router.get("/", async (req, res, next) => {
 // find user by name
 router.get("/searchbyname", async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name } = req.query;
     const allMyFriendships = await Friendship.find({
       $or: [{ requested: req.user.id }, { requestor: req.user.id }],
       status: "accepted",
     }).populate("requested");
+    console.log(allMyFriendships)
     const arrFriends = [];
     for (let friendship of allMyFriendships) {
       if (friendship.requested.name === name) {
@@ -107,8 +108,8 @@ router.delete("/:friendshipId", async (req, res, next) => {
       return res.status(400).json({ message: "You can't do that.." });
     }
     if (
-      friendshipId.requestor.toString() === req.user.id ||
-      friendshipId.requested.toString() === req.user.id
+      friendshipToBeDeleted.requestor.toString() === req.user.id ||
+      friendshipToBeDeleted.requested.toString() === req.user.id
     ) {
       const deleteFriendship = await Friendship.findByIdAndDelete(friendshipId);
       // check status number

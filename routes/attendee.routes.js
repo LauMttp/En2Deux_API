@@ -4,6 +4,17 @@ const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
+//get all attendee of an event
+router.get("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
+  try {
+    const { eventId } = req.params;
+    const attendeesOfEvent = await Attendee.find({event: eventId});
+    return res.status(200).json(attendeesOfEvent);
+  } catch (error) {
+    next(error);
+  }
+})
+
 //Invite people --> create attendee document
 router.post(
   "/:eventId/:userToAddId",
@@ -33,12 +44,7 @@ router.patch("/:attendeeId", isAttendee, async (req, res, next) => {
     const { answer } = req.body;
     const { attendeeId } = req.params;
     const attendeeRequest = await Attendee.findById(attendeeId);
-
-    console.log(attendeeRequest.status);
-
-    if (attendeeRequest === null) {
-      return res.status(401).json({message: "This attendee request does not exist."});
-    } else if (attendeeRequest.user.toString() !== req.user.id) {
+    if (attendeeRequest.user.toString() !== req.user.id) {
       return res.status(401).json({message: "Invalid user, you can't answer this attendee request.",});
     } else if (attendeeRequest.status === "accepted" || attendeeRequest.status === "declined") {
       return res.status(401).json({ message: "You already answered this attendee request." });
@@ -67,17 +73,9 @@ router.patch("/:attendeeId", isAttendee, async (req, res, next) => {
 router.delete("/:attendeeId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { attendeeId } = req.params;
-
-    const attendeeToBeRemoved = await Attendee.findById(attendeeId);
-
-    const voteToBeDeleted = await Vote.findOne({
-      attendee: attendeeToBeRemoved._id,
-    });
-    const deleteVote = await Vote.findByIdAndDelete(voteToBeDeleted._id);
-    const removeAttendee = await Attendee.findByIdAndDelete(
-      attendeeToBeRemoved._id
-    );
-    return res.status(201).json({ deleteVote, removeAttendee });
+    await Vote.findOneAndDelete({ attendee: attendeeId });
+    const removeAttendee = await Attendee.findByIdAndDelete(attendeeId);
+    return res.status(201).json(removeAttendee);
   } catch (error) {
     next(error);
   }
