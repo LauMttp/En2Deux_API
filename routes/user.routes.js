@@ -2,6 +2,12 @@ const router = require("express").Router();
 const User = require("../models/User.model");
 const Attendee = require("../models/Attendee.model");
 const Friendship = require("../models/Friendship.model");
+const { route } = require("./auth.routes");
+
+//Get user
+router.get("/", ( req, res, next ) => {
+  res.json(req.user);
+})
 
 //Update user profile informations
 router.patch("/", async (req, res, next) => {
@@ -15,6 +21,7 @@ router.patch("/", async (req, res, next) => {
     next(error);
   }
 });
+
 
 // Delete user
 router.delete("/", async (req, res, next) => {
