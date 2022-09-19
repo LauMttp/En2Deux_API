@@ -3,7 +3,7 @@ const { Schema, model } = require("mongoose");
 const eventSchema = new Schema({
   name: {
     type: Schema.Types.String,
-    require: true,
+    required: true,
   },
   author: {
     type: Schema.Types.ObjectId,
@@ -19,7 +19,10 @@ const eventSchema = new Schema({
   startingDate: {
     type: Schema.Types.Date,
   },
-  durationInHours: Schema.Types.Number,
+  durationInHours: {
+    type: Schema.Types.Number,
+    required: true,
+  },
   location: Schema.Types.String,
   budget: Schema.Types.Number,
   informationGatheringDeadline: Schema.Types.Date,
