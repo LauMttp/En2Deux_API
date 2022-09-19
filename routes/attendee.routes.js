@@ -5,6 +5,17 @@ const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
+//get all attendee of an event
+router.get("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
+  try {
+    const { eventId } = req.params;
+    const attendeesOfEvent = await Attendee.find({event: eventId});
+    return res.status(200).json(attendeesOfEvent);
+  } catch (error) {
+    next(error);
+  }
+})
+
 //Invite people --> create attendee document
 router.post(
   "/:eventId/:userToAddId",
@@ -117,17 +128,9 @@ router.patch(
 router.delete("/:attendeeId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { attendeeId } = req.params;
-
-    const attendeeToBeRemoved = await Attendee.findById(attendeeId);
-
-    const voteToBeDeleted = await Vote.findOne({
-      attendee: attendeeToBeRemoved._id,
-    });
-    const deleteVote = await Vote.findByIdAndDelete(voteToBeDeleted._id);
-    const removeAttendee = await Attendee.findByIdAndDelete(
-      attendeeToBeRemoved._id
-    );
-    return res.status(201).json({ deleteVote, removeAttendee });
+    await Vote.findOneAndDelete({ attendee: attendeeId });
+    const removeAttendee = await Attendee.findByIdAndDelete(attendeeId);
+    return res.status(201).json(removeAttendee);
   } catch (error) {
     next(error);
   }

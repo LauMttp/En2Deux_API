@@ -38,7 +38,7 @@ router.delete("/", async (req, res, next) => {
       $or: [{ requested: req.user.id }, { requestor: req.user.id }],
     });
     for (let friendship of userFriendships) {
-      await Friendship.findOneAndDelete(friendship._id);
+      await Friendship.findByIdAndDelete(friendship._id);
     }
     const deletedUser = await User.findByIdAndDelete(req.user._id);
     return res.status(200).json(deletedUser);
