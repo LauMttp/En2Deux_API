@@ -5,6 +5,7 @@ const isAttendee = require("../middleware/isAttendee");
 //vote creation
 router.post("/:attendeeId", isAttendee, async (req, res, next) => {
   try {
+    // ----> check if attendee match current user
     const { attendeeId } = req.params;
     const { firstChoice, secondChoice, thirdChoice } = req.body;
     if (!firstChoice) {
@@ -24,7 +25,7 @@ router.post("/:attendeeId", isAttendee, async (req, res, next) => {
   }
 });
 
-// get vote related to one option sorted by first/second/third choice
+// TODO : FINISH THIS ROUTE get vote related to one option sorted by first/second/third choice
 router.get("/byoption/:optionId", isAttendee, async (req, res, next) => {
   try {
     const { optionId } = req.params;

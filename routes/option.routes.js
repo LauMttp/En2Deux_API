@@ -49,7 +49,7 @@ router.patch("/:optionId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { optionId } = req.params;
     // const { date, duration, price, location } = req.body;
-    const { optionDatas } = { ...req.body };
+    const optionDatas = { ...req.body };
     for (let key in optionDatas) {
       if (optionDatas[key] === "") {
         delete optionDatas[key];

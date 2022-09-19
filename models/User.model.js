@@ -19,7 +19,7 @@ const userSchema = new Schema(
       type: Schema.Types.String,
       required: true,
     },
-    genre: {
+    gender: {
       type: Schema.Types.String,
       enum: ["male", "female"],
     },

@@ -6,7 +6,7 @@ const saltRounds = 10;
 
 router.post("/signup", async (req, res, next) => {
   try {
-    const { username, name, surname, password, genre, phoneNumber, email } =
+    const { username, name, surname, password, gender, phoneNumber, email } =
       req.body;
 
     const foundUser = await User.findOne({ username });
@@ -27,7 +27,7 @@ router.post("/signup", async (req, res, next) => {
       name,
       surname,
       password: hashedPassword,
-      genre,
+      gender,
       phoneNumber,
       email,
     });
