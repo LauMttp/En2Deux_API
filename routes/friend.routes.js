@@ -25,6 +25,43 @@ router.post("/:requestedId", async (req, res, next) => {
   }
 });
 
+//display friendship requests for me 
+router.get("/invitations", async (req, res, next) => {
+  try {
+    const addRequests = await Friendship.find({
+      requested: req.user.id,
+      status: "pending"
+    }).populate("requestor");
+    console.log(addRequests)
+    return res.status(200).json(addRequests);
+  } catch (error) {
+    next(error);
+  }
+})
+
+// display user friends
+router.get("/", async (req, res, next) => {
+  try {
+    const allMyFriends = await Friendship.find({
+      $or: [{ requested: req.user.id }, { requestor: req.user.id }],
+      status: "accepted",
+    }).populate("requested requestor")
+    // const finalArray = allMyFriends.map(friend => {
+    //   if(friend.requested === req.user.id) {
+    //     console.log(friend.populate("requestor"))
+    //     return await friend.populate("requestor");
+    //   }else{
+    //     console.log(friend.populate("requested"))
+    //     return await friend.populate("requested")
+    //   }
+    // })
+
+    return res.status(200).json(allMyFriends);
+  } catch (error) {
+    next(error);
+  }
+});
+
 //accept friendship request
 router.patch("/:friendshipId", async (req, res, next) => {
   try {
@@ -66,19 +103,6 @@ router.patch("/:friendshipId", async (req, res, next) => {
       const deletedRequest = await Friendship.findByIdAndDelete(friendshipId);
       return res.status(201).json(deletedRequest);
     }
-  } catch (error) {
-    next(error);
-  }
-});
-
-// display user friends
-router.get("/", async (req, res, next) => {
-  try {
-    const allMyFriends = await Friendship.find({
-      $or: [{ requested: req.user.id }, { requestor: req.user.id }],
-      status: "accepted",
-    });
-    return res.status(200).json(allMyFriends);
   } catch (error) {
     next(error);
   }
