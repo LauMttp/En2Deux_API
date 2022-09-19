@@ -3,10 +3,7 @@ const Option = require("../models/Option.model");
 const Vote = require("../models/Vote.model");
 
 const isAttendee = async (req, res, next) => {
-  const { eventId } = req.params;
-  const { attendeeId } = req.params;
-  const { optionId } = req.params;
-  const { voteId } = req.params;
+  const { eventId, attendeeId, optionId, voteId } = req.params;
   if (eventId) {
     try {
       const findAttendance = await Attendee.findOne({
@@ -28,8 +25,11 @@ const isAttendee = async (req, res, next) => {
     try {
       const tierceAttendance = await Attendee.findById(attendeeId);
       if (!tierceAttendance) {
-        return res.status(401).json({message: "This attendee document does not exist."});
-      } 
+        return res
+          .status(401)
+          .json({ message: "This attendee document does not exist." });
+      }
+
       const findAttendance = await Attendee.findOne({
         event: tierceAttendance.event,
         user: req.user._id,

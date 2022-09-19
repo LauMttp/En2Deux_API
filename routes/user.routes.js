@@ -3,6 +3,16 @@ const User = require("../models/User.model");
 const Attendee = require("../models/Attendee.model");
 const Friendship = require("../models/Friendship.model");
 
+//Get user profile informations
+router.get("/", async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    return res.status(201).json(user);
+  } catch (error) {
+    next(error);
+  }
+});
+
 //Update user profile informations
 router.patch("/", async (req, res, next) => {
   const updatedInfos = { ...req.body };

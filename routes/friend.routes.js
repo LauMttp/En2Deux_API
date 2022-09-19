@@ -8,6 +8,7 @@ router.post("/:requestedId", async (req, res, next) => {
     const friendshipExist = await Friendship.findOne({
       $or: [
         { requested: req.user.id, requestor: requestedId },
+
         { requested: requestedId, requestor: req.user.id }]
     })
     if(friendshipExist) {
@@ -32,7 +33,10 @@ router.patch("/:friendshipId", async (req, res, next) => {
     const friendshipRequest = await Friendship.findById(friendshipId);
     console.log(friendshipRequest);
     if (!friendshipRequest) {
-      return res.status(401).json({message: "This friendship request does not exist."});
+      return res
+        .status(401)
+        .json({ message: "This friendship request does not exist." });
+
     } else if (friendshipRequest.requested.toString() !== req.user.id) {
       return res.status(401).json({
         message: "Invalid user, you can't answer this friendship request.",
@@ -46,10 +50,18 @@ router.patch("/:friendshipId", async (req, res, next) => {
         .json({ message: "You already answered this friendship request." });
     } else if (answer === "yes") {
       // friendshipRequest.status = "accepted";
-      const friendshipAccepted = await Friendship.findByIdAndUpdate(friendshipId, {status : "accepted"}, {new: true});
+      const friendshipAccepted = await Friendship.findByIdAndUpdate(
+        friendshipId,
+        { status: "accepted" },
+        { new: true }
+      );
       return res.status(201).json(friendshipAccepted);
     } else if (answer === "no") {
-      const friendshipDeclined = await Friendship.findByIdAndUpdate(friendshipId, {status : "declined"}, {new: true});
+      const friendshipDeclined = await Friendship.findByIdAndUpdate(
+        friendshipId,
+        { status: "declined" },
+        { new: true }
+      );
       res.status(201).json(friendshipDeclined);
       const deletedRequest = await Friendship.findByIdAndDelete(friendshipId);
       return res.status(201).json(deletedRequest);

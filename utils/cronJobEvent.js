@@ -2,9 +2,6 @@ const CronJob = require("cron").CronJob;
 const Event = require("../models/Event.model");
 const generateOptions = require("./generateOptions");
 
-// const date = new Date();
-// date.setSeconds(date.getSeconds() + 5);
-
 function createJob(event) {
   if (event.informationGatheringDeadline) {
     setVotingStage(event);

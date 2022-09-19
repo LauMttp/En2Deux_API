@@ -6,6 +6,9 @@ const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
+const createJob = require("../utils/cronJobEvent");
+
+
 // Create an event
 router.post("/", async (req, res, next) => {
   try {
@@ -48,7 +51,7 @@ router.post("/", async (req, res, next) => {
 });
 
 //display one event by ID (with attendees, options, votes, etc)
-router.get("/byid/:eventId", isAttendee, async (req, res, next) => {
+router.get("/:eventId", isAttendee, async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const findEvent = await Event.findById(eventId);
@@ -60,7 +63,9 @@ router.get("/byid/:eventId", isAttendee, async (req, res, next) => {
       findVotes.push(votesOf);
     }
     const displayEvent = [findEvent, findOptions, findAttendees, findVotes];
+
     return res.json(displayEvent);
+
   } catch (error) {
     next(error);
   }
