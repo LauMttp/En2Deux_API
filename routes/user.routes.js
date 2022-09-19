@@ -2,7 +2,7 @@ const router = require("express").Router();
 const User = require("../models/User.model");
 const Attendee = require("../models/Attendee.model");
 const Friendship = require("../models/Friendship.model");
-const { route } = require("./auth.routes");
+
 
 //Get user
 router.get("/", ( req, res, next ) => {
