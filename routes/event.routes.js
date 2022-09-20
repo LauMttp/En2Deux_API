@@ -19,6 +19,8 @@ router.post("/", async (req, res, next) => {
       location,
       budget,
       votingStageDeadline,
+      locationSuggestions,
+      dateSuggestion,
     } = req.body;
     if (!name) {
       return res
@@ -31,9 +33,11 @@ router.post("/", async (req, res, next) => {
         description,
         startingDate,
         durationInHours,
+        dateSuggestion,
         location,
         budget,
         votingStageDeadline,
+        locationSuggestions,
       });
       const { _id } = eventCreated;
       const creatorAttendance = await Attendee.create({
