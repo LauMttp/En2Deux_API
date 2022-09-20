@@ -4,9 +4,20 @@ const Attendee = require("../models/Attendee.model");
 const Friendship = require("../models/Friendship.model");
 const Vote = require("../models/Vote.model");
 
+
 //Get user
 router.get("/", (req, res, next) => {
-  res.json(req.user);
+  res.status(201).json(req.user);
+});
+
+// get all users
+router.get("/all", async (req, res, next) => {
+  try {
+    const users = await User.find({$nor:[{_id: req.user._id}]}).select("-password");
+    return res.json(users);
+  } catch (error) {
+    next(error);
+  }
 });
 
 //Get user profile informations
