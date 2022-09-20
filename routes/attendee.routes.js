@@ -5,6 +5,7 @@ const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
+
 //get all attendee of an event
 router.get("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   try {
