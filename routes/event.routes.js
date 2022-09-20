@@ -8,7 +8,6 @@ const isAdmin = require("../middleware/isAdmin");
 
 const createJob = require("../utils/cronJobEvent");
 
-
 // Create an event
 router.post("/", async (req, res, next) => {
   try {
@@ -16,7 +15,7 @@ router.post("/", async (req, res, next) => {
       name,
       description,
       // startingDate,
-      // durationInHours,
+      durationInHours,
       // location,
       // budget,
       votingStageDeadline,
@@ -31,7 +30,7 @@ router.post("/", async (req, res, next) => {
         author: req.user.id,
         description,
         // startingDate,
-        // durationInHours,
+        durationInHours,
         // location,
         // budget,
         votingStageDeadline,
@@ -65,7 +64,6 @@ router.get("/:eventId", isAttendee, async (req, res, next) => {
     const displayEvent = [findEvent, findOptions, findAttendees, findVotes];
 
     return res.json(displayEvent);
-
   } catch (error) {
     next(error);
   }
@@ -171,12 +169,10 @@ router.get("/upcoming/:role", async (req, res, next) => {
       ]);
       return res.json(notAdminUpcoming);
     } else {
-      return res
-        .status(404)
-        .json({
-          message:
-            "Request not found. Please select upcoming event as Admin or Attendee.",
-        });
+      return res.status(404).json({
+        message:
+          "Request not found. Please select upcoming event as Admin or Attendee.",
+      });
     }
   } catch (error) {
     next(error);
@@ -187,7 +183,7 @@ router.get("/upcoming/:role", async (req, res, next) => {
 router.get("/byrole/:role", async (req, res, next) => {
   try {
     const { role } = req.params;
-    console.log(role)
+    console.log(role);
     if (role === "admin") {
       const administratedEvents = await Attendee.aggregate([
         {

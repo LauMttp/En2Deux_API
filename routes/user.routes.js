@@ -2,12 +2,12 @@ const router = require("express").Router();
 const User = require("../models/User.model");
 const Attendee = require("../models/Attendee.model");
 const Friendship = require("../models/Friendship.model");
-
+const Vote = require("../models/Vote.model");
 
 //Get user
-router.get("/", ( req, res, next ) => {
+router.get("/", (req, res, next) => {
   res.json(req.user);
-})
+});
 
 //Get user profile informations
 router.get("/", async (req, res, next) => {
@@ -31,7 +31,6 @@ router.patch("/", async (req, res, next) => {
     next(error);
   }
 });
-
 
 // Delete user
 router.delete("/", async (req, res, next) => {
