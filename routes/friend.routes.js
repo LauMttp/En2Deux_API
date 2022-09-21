@@ -25,13 +25,13 @@ router.post("/:requestedId", async (req, res, next) => {
   }
 });
 
-//display friendship requests for me 
+//display friendship requests sent and receive on "pending" status 
 router.get("/invitations", async (req, res, next) => {
   try {
     const addRequests = await Friendship.find({
-      requested: req.user.id,
+      $or: [{ requested: req.user.id}, { requestor: req.user.id }],
       status: "pending"
-    }).populate("requestor");
+    }).populate("requestor requested");
     console.log(addRequests)
     return res.status(200).json(addRequests);
   } catch (error) {
@@ -109,19 +109,19 @@ router.patch("/:friendshipId", async (req, res, next) => {
 });
 
 // find user by name
-router.get("/searchbyname", async (req, res, next) => {
+router.get("/search", async (req, res, next) => {
   try {
-    const { name } = req.query;
+    const { username } = req.query;
     const allMyFriendships = await Friendship.find({
       $or: [{ requested: req.user.id }, { requestor: req.user.id }],
       status: "accepted",
-    }).populate("requested");
+    }).populate("requested requestor");
     console.log(allMyFriendships)
     const arrFriends = [];
     for (let friendship of allMyFriendships) {
-      if (friendship.requested.name === name) {
+      if (friendship.requested.username === username) {
         arrFriends.push(friendship.requested);
-      } else if (friendship.requestor.name === name) {
+      } else if (friendship.requestor.username === username) {
         arrFriends.push(friendship.requestor);
       }
     }
