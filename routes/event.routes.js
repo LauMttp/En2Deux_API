@@ -18,6 +18,7 @@ router.post("/", async (req, res, next) => {
       durationInHours,
       location,
       budget,
+      informationGatheringDeadline,
       votingStageDeadline,
       locationSuggestions,
       dateSuggestion,
@@ -36,6 +37,7 @@ router.post("/", async (req, res, next) => {
         dateSuggestion,
         location,
         budget,
+        informationGatheringDeadline,
         votingStageDeadline,
         locationSuggestions,
       });
