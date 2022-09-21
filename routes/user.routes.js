@@ -13,8 +13,19 @@ router.get("/", (req, res, next) => {
 // get all users
 router.get("/all", async (req, res, next) => {
   try {
-    const users = await User.find({$nor:[{_id: req.user._id}]}).select("-password");
+    const users = await User.find({$nor:[{_id: req.user._id}]}).select(("_id username name surname"));
     return res.json(users);
+  } catch (error) {
+    next(error);
+  }
+});
+
+//get one user by username
+router.get("/:username", async (req, res, next) => {
+  try {
+    const {username} = req.params;
+    const oneUser = await User.find({username: username}).select("_id username name surname");
+    return res.json(oneUser);
   } catch (error) {
     next(error);
   }
