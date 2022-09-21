@@ -18,6 +18,7 @@ router.post("/", async (req, res, next) => {
       durationInHours,
       location,
       budget,
+      informationGatheringDeadline,
       votingStageDeadline,
       locationSuggestions,
       dateSuggestion,
@@ -36,12 +37,13 @@ router.post("/", async (req, res, next) => {
         dateSuggestion,
         location,
         budget,
+        informationGatheringDeadline,
         votingStageDeadline,
         locationSuggestions,
       });
-      const { _id } = eventCreated;
+      const { id } = eventCreated;
       const creatorAttendance = await Attendee.create({
-        event: _id,
+        event: id,
         user: req.user.id,
         isAdmin: true,
         status: "accepted",
@@ -226,16 +228,22 @@ router.get("/:eventId", isAttendee, async (req, res, next) => {
     const findAttendees = await Attendee.find({ event: eventId });
     let findVotes = [];
     for (let attendee of findAttendees) {
-      const votesOf = await Vote.findOne({ attendee: attendee._id });
+      const votesOf = await Vote.findOne({ attendee: attendee.id });
       findVotes.push(votesOf);
     }
-    const displayEvent = [findEvent, findOptions, findAttendees, findVotes];
+    const displayEvent = {
+      event: findEvent,
+      options: findOptions,
+      attendees: findAttendees,
+      votes: findVotes,
+    };
 
     return res.json(displayEvent);
   } catch (error) {
     next(error);
   }
 });
+
 //Update event informations
 router.patch("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   try {

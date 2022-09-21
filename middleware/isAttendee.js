@@ -8,7 +8,7 @@ const isAttendee = async (req, res, next) => {
     try {
       const findAttendance = await Attendee.findOne({
         event: eventId,
-        user: req.user._id,
+        user: req.user.id,
       });
       if (!findAttendance) {
         return res
@@ -50,8 +50,10 @@ const isAttendee = async (req, res, next) => {
       const option = await Option.findById(optionId);
 
       if (!option) {
-        return res.status(401).json({message: "This option document does not exist."});
-      } 
+        return res
+          .status(401)
+          .json({ message: "This option document does not exist." });
+      }
       const findAttendance = await Attendee.findOne({
         event: option.event,
         user: req.user._id,
