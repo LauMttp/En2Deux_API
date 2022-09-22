@@ -240,7 +240,7 @@ router.get("/:eventId", isAttendee, async (req, res, next) => {
       attendees: findAttendees,
       votes: findVotes,
     };
-    console.log(displayEvent.attendees)
+    
     return res.json(displayEvent);
   } catch (error) {
     next(error);
