@@ -223,21 +223,24 @@ router.get("/byrole/:role", async (req, res, next) => {
 router.get("/:eventId", isAttendee, async (req, res, next) => {
   try {
     const { eventId } = req.params;
-    const findEvent = await Event.findById(eventId);
+    const findEvent = await Event.findById(eventId).populate("author");
     const findOptions = await Option.find({ event: eventId });
-    const findAttendees = await Attendee.find({ event: eventId });
+    const findAttendees = await Attendee.find({ event: eventId }).populate("user");
+
     let findVotes = [];
+
     for (let attendee of findAttendees) {
       const votesOf = await Vote.findOne({ attendee: attendee.id });
       findVotes.push(votesOf);
     }
+
     const displayEvent = {
       event: findEvent,
       options: findOptions,
       attendees: findAttendees,
       votes: findVotes,
     };
-
+    
     return res.json(displayEvent);
   } catch (error) {
     next(error);
