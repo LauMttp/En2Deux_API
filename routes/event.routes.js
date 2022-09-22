@@ -225,7 +225,9 @@ router.get("/:eventId", isAttendee, async (req, res, next) => {
     const { eventId } = req.params;
     const findEvent = await Event.findById(eventId).populate("author");
     const findOptions = await Option.find({ event: eventId });
-    const findAttendees = await Attendee.find({ event: eventId }).populate("user");
+    const findAttendees = await Attendee.find({ event: eventId }).populate(
+      "user"
+    );
 
     let findVotes = [];
 
@@ -240,7 +242,7 @@ router.get("/:eventId", isAttendee, async (req, res, next) => {
       attendees: findAttendees,
       votes: findVotes,
     };
-    
+
     return res.json(displayEvent);
   } catch (error) {
     next(error);
@@ -259,7 +261,7 @@ router.patch("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
     }
     const updatedEvent = await Event.findByIdAndUpdate(eventId, updatedInfos, {
       new: true,
-    });
+    }).populate("author");
     return res.status(200).json(updatedEvent);
   } catch (error) {
     next(error);
