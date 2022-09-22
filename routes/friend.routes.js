@@ -25,42 +25,29 @@ router.post("/:requestedId", async (req, res, next) => {
   }
 });
 
-//display friendship requests sent and receive on "pending" status 
-router.get("/invitations", async (req, res, next) => {
-  try {
-    const addRequests = await Friendship.find({
-      $or: [{ requested: req.user.id}, { requestor: req.user.id }],
-      status: "pending"
-    }).populate("requestor requested");
-    console.log(addRequests)
-    return res.status(200).json(addRequests);
-  } catch (error) {
-    next(error);
-  }
-})
 
-// display user friends
+
+// display user friendships (accepted and pending)
 router.get("/", async (req, res, next) => {
   try {
-    const allMyFriends = await Friendship.find({
+    const friends = await Friendship.find({
       $or: [{ requested: req.user.id }, { requestor: req.user.id }],
       status: "accepted",
     }).populate("requested requestor")
-    // const finalArray = allMyFriends.map(friend => {
-    //   if(friend.requested === req.user.id) {
-    //     console.log(friend.populate("requestor"))
-    //     return await friend.populate("requestor");
-    //   }else{
-    //     console.log(friend.populate("requested"))
-    //     return await friend.populate("requested")
-    //   }
-    // })
+    const friendRequests = await Friendship.find({
+      $or: [{ requested: req.user.id }, { requestor: req.user.id }],
+      status: "pending",
+    }).populate("requested requestor")
 
-    return res.status(200).json(allMyFriends);
+    const myFriendships = [{"friends" : friends, "friendRequests" : friendRequests }]
+
+    return res.status(200).json(myFriendships);
   } catch (error) {
     next(error);
   }
 });
+
+
 
 //accept friendship request
 router.patch("/:friendshipId", async (req, res, next) => {
@@ -108,21 +95,20 @@ router.patch("/:friendshipId", async (req, res, next) => {
   }
 });
 
-// find user by name
+// find friend or pending friend by username
 router.get("/search", async (req, res, next) => {
   try {
     const { username } = req.query;
     const allMyFriendships = await Friendship.find({
       $or: [{ requested: req.user.id }, { requestor: req.user.id }],
-      status: "accepted",
     }).populate("requested requestor");
     console.log(allMyFriendships)
     const arrFriends = [];
     for (let friendship of allMyFriendships) {
       if (friendship.requested.username === username) {
-        arrFriends.push(friendship.requested);
+        arrFriends.push(friendship);
       } else if (friendship.requestor.username === username) {
-        arrFriends.push(friendship.requestor);
+        arrFriends.push(friendship);
       }
     }
     // vérifier status ++ ajouter recherche by user name
@@ -131,6 +117,7 @@ router.get("/search", async (req, res, next) => {
     next(error);
   }
 });
+
 
 // remove user from friend list
 router.delete("/:friendshipId", async (req, res, next) => {
