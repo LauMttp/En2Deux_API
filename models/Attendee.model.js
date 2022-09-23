@@ -22,6 +22,11 @@ const attendeeSchema = new Schema({
   availabilities: [Schema.Types.Date],
   budget: Schema.Types.Number,
   location: Schema.Types.String,
+  hasAnswered: {
+    type: Schema.Types.Boolean,
+    required: true,
+    default: false,
+  },
 });
 
 const Attendee = model("Attendee", attendeeSchema);
