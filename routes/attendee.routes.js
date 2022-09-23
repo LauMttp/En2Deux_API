@@ -5,17 +5,39 @@ const Vote = require("../models/Vote.model");
 const isAttendee = require("../middleware/isAttendee");
 const isAdmin = require("../middleware/isAdmin");
 
-
 //get all attendee of an event
 router.get("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   try {
     const { eventId } = req.params;
-    const attendeesOfEvent = await Attendee.find({event: eventId});
+    const attendeesOfEvent = await Attendee.find({ event: eventId });
     return res.status(200).json(attendeesOfEvent);
   } catch (error) {
     next(error);
   }
-})
+});
+
+//Invite people --> create attendee document
+// router.post(
+//   "/:eventId/:userToAddId",
+//   isAttendee,
+//   isAdmin,
+//   async (req, res, next) => {
+//     try {
+//       const { eventId, userToAddId } = req.params;
+//       // need to indicate in the req.body isAdmin: true if you want to set the attendee as admin
+//       const { isAdmin } = req.body;
+//       const createdAttendee = await Attendee.create({
+//         event: eventId,
+//         user: userToAddId,
+//         isAdmin,
+//         status: "pending",
+//       });
+//       return res.status(201).json(createdAttendee);
+//     } catch (error) {
+//       next(error);
+//     }
+//   }
+// );
 
 //Invite people --> create attendee document
 router.post(
@@ -25,6 +47,16 @@ router.post(
   async (req, res, next) => {
     try {
       const { eventId, userToAddId } = req.params;
+
+      const attendeeReqExist = await Attendee.findOne({
+        event: eventId,
+        user: userToAddId,
+      });
+      if (attendeeReqExist) {
+        return res
+          .status(400)
+          .json({ message: "Attendee already exists or request is pending." });
+      }
       // need to indicate in the req.body isAdmin: true if you want to set the attendee as admin
       const { isAdmin } = req.body;
       const createdAttendee = await Attendee.create({
