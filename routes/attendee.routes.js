@@ -16,30 +16,6 @@ router.get("/:eventId", isAttendee, isAdmin, async (req, res, next) => {
   }
 });
 
-//Invite people --> create attendee document
-// router.post(
-//   "/:eventId/:userToAddId",
-//   isAttendee,
-//   isAdmin,
-//   async (req, res, next) => {
-//     try {
-//       const { eventId, userToAddId } = req.params;
-//       // need to indicate in the req.body isAdmin: true if you want to set the attendee as admin
-//       const { isAdmin } = req.body;
-//       const createdAttendee = await Attendee.create({
-//         event: eventId,
-//         user: userToAddId,
-//         isAdmin,
-//         status: "pending",
-//       });
-//       return res.status(201).json(createdAttendee);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
-
-//Invite people --> create attendee document
 router.post(
   "/:eventId/:userToAddId",
   isAttendee,
@@ -126,10 +102,15 @@ router.patch(
     try {
       const { attendeeId } = req.params;
       // TODO : need to check "location" is a value from the locationSuggestions of the event and availabilities is an array of valid upcoming dates
-      const { availabilities, budget, location } = req.body;
+      const { availabilities, budget, location, hasAnswered } = req.body;
       const eventAttendance = await Attendee.findById(attendeeId);
       const myEvent = await Event.findById(eventAttendance.event);
-      const informationToProvide = { availabilities, budget, location };
+      const informationToProvide = {
+        availabilities,
+        budget,
+        location,
+        hasAnswered,
+      };
       if (eventAttendance.user.toString() !== req.user.id) {
         return res.status(401).json({
           message: "Invalid user, you can't provide information for this user.",
