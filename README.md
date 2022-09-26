@@ -1,5 +1,5 @@
 
-## What is En Deux-Deux
+## What is En2Deux
 
 A collaborative work with Laurent M. and Agash J. made for the 2nd project of Ironhack. 
 
